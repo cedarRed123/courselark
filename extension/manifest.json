@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Open Campus",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "Local-first themes, assignments, GPA, notes, study sets and planning. No account or subscription.",
   "permissions": [
     "storage",

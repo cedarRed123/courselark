@@ -1,23 +1,35 @@
-# Open Campus privacy policy
+# Open Campus Privacy Policy
 
-Last updated October 15, 2026.
+**Effective October 17, 2026**  
+**Operator:** Noah Fishman  
+**Contact:** ntfishman@gmail.com
 
-Open Campus is a browser extension that helps you organize coursework. It does not require an Open Campus account, show ads, or send analytics to its developer.
+Open Campus is an independent browser extension for organizing schoolwork. It has no Open Campus account, subscription, advertising, analytics, or developer-operated data collection endpoint. This policy explains what it accesses and how you control the data.
 
-## Data the extension uses
+## Information handled
 
-When you choose **Connect this LMS site**, Open Campus requests access to that site's pages. When you choose **Import from this tab**, it reads your signed-in Canvas profile identifier, course names and metadata, assignment titles, descriptions, deadlines, submission status, and available grades from Canvas's same-origin API. It uses these details to display the dashboard, to-do list, and GPA estimates. It does not submit coursework or change Canvas grades. It only accesses connected sites and only imports when you ask it to.
+When you choose **Connect this LMS site**, Open Campus requests browser access to that LMS origin. When you choose **Import from this tab** while signed in to Canvas, it uses your current Canvas session to read your Canvas profile identifier, course and enrollment details, assignment titles, descriptions, deadlines, points, submission status, scores, and available grades. On other connected LMS pages, it may read visible course names and links. It uses this information for the dashboard, assignments, course cards, and grade estimates. It does not request your LMS password, submit coursework, or change official grades.
 
-You can also enter tasks, notes, study cards, grade adjustments, preferences, themes, and links, and attach files or audio. These records are stored in your browser's extension storage or IndexedDB on your device. Open Campus does not synchronize them to a developer server. They remain until you delete them or remove the extension. Removing the extension normally removes its local data; export any backup you want to keep first.
+You may enter tasks, notes, study cards, grade adjustments, course details, themes, settings, links, files, and audio. The extension records local study activity, focus sessions, and task completion for its progress features. These records may contain personal information, website content, and user activity. They are stored in browser extension storage and IndexedDB on your device. The standalone dashboard may also use your browser profile's local storage. The extension does not send them to Noah Fishman or an Open Campus server.
 
-## When data leaves your device
+## Optional transfers you control
 
-Open Campus's optional local AI companion runs at `127.0.0.1` and sends selected notes/questions to your locally running Ollama model. Offline transcription can use local whisper.cpp. Browser speech recognition, if you choose it, may use your browser vendor's service according to its policies. Opening a playlist or other external link contacts its destination. Choosing **Google** or **Outlook** in the planner opens the provider with the task title and time in the URL; task notes are excluded. Exporting a backup or calendar file saves a copy wherever you choose. None of these optional actions is required to use the core extension.
+- **Calendars:** Choosing Google or Outlook opens that provider with the task title and time in the URL. Task notes are excluded. Calendar and JSON backup exports save copies where you choose. Backups contain local records but exclude attached file blobs.
+- **Speech and audio:** Audio recording is saved locally. Browser speech recognition is off by default. If you check its option before recording, audio may be processed by your browser provider under its own policy. The separate **Transcribe locally** action sends a recording to a service you run at `127.0.0.1:4317`, which can use a local whisper.cpp model.
+- **Local AI:** If you choose Smart notes, AI study set, or Ask about notes, the selected notes and prompt go to the companion service you run at `127.0.0.1:4317` and its configured local Ollama model. Open Campus does not configure a remote AI provider for you.
+- **External links and images:** Opening an assignment, playlist, or custom link contacts its destination. A custom course image URL may cause your browser to request that image from its host, which can receive ordinary request information such as your IP address.
+- **Notifications:** If you enable reminders or complete a focus session, browser or operating-system notifications may show task titles and deadlines.
 
-The extension does not sell or share your data with the developer or advertisers. Your school, browser, operating system, optional AI/speech tools, and any external service you choose have their own practices. Open Campus uses browser notifications only if you turn on reminders. It does not request your Canvas password; your existing signed-in session is used for read-only import.
+The extension does not sell, rent, or share data with advertisers or data brokers. It uses data only for the features described here. Its use of information received from Chrome APIs complies with the [Chrome Web Store User Data Policy, including Limited Use](https://developer.chrome.com/docs/webstore/program-policies/limited-use/).
 
-## Your choices
+## Retention, choice, and security
 
-Disconnect an LMS site in Open Campus Settings to remove its future page access. You can also revoke site access in the browser's extension settings. Delete individual records in the app, export a backup, or remove the extension to clear its local storage. You may review this policy before connecting a school site.
+Records remain in your browser profile until you delete them, replace them with a backup, clear browser storage, or uninstall the extension. Disconnecting an LMS origin revokes future access but does **not** delete previously imported data. You can delete records in the app, export a backup, or remove the extension. Export attached files separately from each notebook.
 
-For privacy questions, use the support contact shown on Open Campus's Chrome Web Store listing once published.
+Local data security depends on your device and browser profile. Someone with access to an unlocked profile or exported backup may be able to read it. LMS access is limited to origins you approve through browser permission prompts; Canvas import uses the site's HTTPS connection and your signed-in session. The optional companion listens on the loopback address; do not expose it to a public network. No storage or transmission system is perfectly secure.
+
+## Children, changes, and contact
+
+Open Campus is a general schoolwork tool. It does not knowingly collect information from children for a developer-operated service. School and family rules may govern a student's use of browser extensions and LMS accounts. Material policy changes will be published here with an updated date before or with the relevant extension update.
+
+For privacy questions, contact **ntfishman@gmail.com**. The developer does not hold your extension records, so access and deletion normally happen through the extension and browser profile. The host of this public policy page may process routine web requests, including IP addresses and server logs, under its own terms. The policy page uses no analytics or advertising code.
