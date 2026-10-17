@@ -5,7 +5,7 @@ Name: Open Campus
 Short description: Local-first Canvas companion for assignments, GPA estimates, notes, study sets, and themes. No account or subscription.
 
 Detailed description:
-Open Campus adds a study workspace inside your connected Canvas tab. See upcoming assignments and a weekly to-do list, estimate term and cumulative GPA, organize notes and flashcards, plan work blocks, and customize your dashboard. Connect only the school site you choose; import is read-only and runs when you request it. Core features work without an Open Campus account or subscription. Optional local AI requires a separately installed Ollama model and the included local companion. Grade estimates may differ from official school records. Open Campus is independent of Canvas/Instructure and BetterCampus.
+Open Campus is a free, open-source and independent alternative to BetterCampus for Canvas users. There is no Open Campus account, subscription or paywall. It adds a study workspace inside your connected Canvas tab: upcoming assignments and a weekly to-do list, term and cumulative GPA estimates, notes, flashcards, work planning and dashboard themes. You choose which school site to connect; imports are read-only and run when you request them. Optional local AI requires a separately installed model and the included local companion. Grade estimates may differ from official school records. Source code: https://github.com/cedarRed123/open-campus. Open Campus is not affiliated with or endorsed by BetterCampus, Canvas/Instructure or any school.
 
 Single purpose: Organize and study coursework from a connected learning-management site in a browser workspace.
 

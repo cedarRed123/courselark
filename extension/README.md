@@ -1,6 +1,6 @@
 # Open Campus
 
-An original Chrome/Edge MV3 campus companion. Implemented features have **no subscription, account requirement, paid unlock, monthly counters, or remote entitlement checks**. This is a local-first alternative, **not a complete duplicate of BetterCampus 9.8.15**. See [FEATURE-COVERAGE.md](FEATURE-COVERAGE.md) and [REA-FINDINGS.md](REA-FINDINGS.md) for verified scope and remaining gaps.
+A free, open-source Chrome/Edge MV3 campus companion. Implemented features have **no Open Campus subscription, account requirement, paywall, paid unlock, monthly counters, or remote entitlement checks**. Open Campus is an independent, local-first alternative to BetterCampus, with original code and assets and no BetterCampus affiliation or endorsement. It is **not a complete duplicate of BetterCampus 9.8.15**. See [FEATURE-COVERAGE.md](FEATURE-COVERAGE.md) and [REA-FINDINGS.md](REA-FINDINGS.md) for verified scope and remaining gaps.
 
 ## Install the extension
 
