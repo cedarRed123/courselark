@@ -1,0 +1,64 @@
+// Real unpacked-extension smoke. Start the local companion server first.
+// Playwright 1.64.1 / Chrome for Testing 156 tested; OPEN_CAMPUS_PLAYWRIGHT may point to index.mjs.
+import assert from 'node:assert/strict';
+import {mkdir, writeFile, mkdtemp, readFile, rm} from 'node:fs/promises';
+import {tmpdir} from 'node:os';
+import {join} from 'node:path';
+import {fileURLToPath} from 'node:url';
+const {chromium} = await import(process.env.OPEN_CAMPUS_PLAYWRIGHT || 'playwright');
+const extension = fileURLToPath(new URL('../', import.meta.url));
+const profile = await mkdtemp(join(tmpdir(), 'open-campus-extension-test-'));
+await mkdir(profile, {recursive:true});
+const context = await chromium.launchPersistentContext(profile, {channel:'chromium', headless:true, viewport:{width:1280,height:850}, ignoreDefaultArgs:['--disable-extensions'], args:['--enable-unsafe-extension-debugging']});
+const outcomes=[], errors=[]; const pass = message => {outcomes.push(message); console.log(message);};
+try {
+  const cdp=await context.browser().newBrowserCDPSession();
+  const loaded=await cdp.send('Extensions.loadUnpacked',{path:extension});
+  console.log('Loaded extension',loaded.id);
+  const worker=context.serviceWorkers()[0]||await context.waitForEvent('serviceworker',{timeout:15000});
+  const id=worker.url().split('/')[2], root=`chrome-extension://${id}/`;
+  const identity=await worker.evaluate(async()=>({manifest:chrome.runtime.getManifest(),stored:await chrome.storage.local.get('campus'),grants:await chrome.permissions.getAll()}));
+  assert.equal(identity.manifest.name,'Open Campus');
+  await worker.evaluate(async()=>{for(let i=0;i<20;i++){if((await chrome.storage.local.get('campus')).campus)return;await new Promise(r=>setTimeout(r,100));}throw Error('Initial storage missing');});
+  pass('PASS real unpacked Manifest V3 extension loads; module service worker starts and initializes extension storage.');
+  const page=await context.newPage();page.on('pageerror',e=>{errors.push(e.message);console.log('PAGE ERROR',e.message);});
+  const blocked=[];page.on('console',m=>{if(m.type()==='error'){blocked.push(m.text());console.log('CONSOLE ERROR',m.text());}});
+  await page.goto(root+'index.html');await page.waitForSelector('.hero');
+  assert.match(await page.locator('#view').textContent(),/Find your rhythm/);
+  pass('PASS packaged extension workspace loads its ES modules and styles under real extension CSP.');
+  const fixtureBytes=[...await readFile(fileURLToPath(new URL('./fixture.pdf', import.meta.url)))];
+  const pdfResult=await page.evaluate(async bytes=>{
+    const pdfjs=await import('./src/vendor/pdf.mjs');pdfjs.GlobalWorkerOptions.workerSrc=new URL('./src/vendor/pdf.worker.mjs',location.href).href;
+    const task=pdfjs.getDocument({data:new Uint8Array(bytes),isEvalSupported:false,standardFontDataUrl:new URL('./src/vendor/standard_fonts/',location.href).href});
+    const pdf=await task.promise;const text=await (await pdf.getPage(1)).getTextContent();
+    return {text:text.items.map(i=>i.str).join(' '),worker:task._worker?.port?.constructor?.name};
+  },fixtureBytes);
+  assert.match(pdfResult.text,/Photosynthesis converts light into chemical energy/);assert.equal(pdfResult.worker,'Worker');
+  pass('PASS bundled PDF.js starts a real Worker and extracts text with packaged standard fonts under extension CSP.');
+  await page.goto(root+'index.html#notes');await page.locator('[data-action="note-edit"][data-id=""]').click();
+  await page.locator('#note-form [name="title"]').fill('PDF fixture notebook');await page.locator('#note-body').fill('Lecture source.');
+  const [chooser]=await Promise.all([page.waitForEvent('filechooser'),page.locator('[data-action="note-upload"]').click()]);
+  await chooser.setFiles(fileURLToPath(new URL('./fixture.pdf', import.meta.url)));
+  try {await page.waitForFunction(()=>document.querySelector('#note-body')?.value.includes('Photosynthesis converts light into chemical energy.'),{},{timeout:12000});} catch(e) {console.log('PDF DEBUG',await page.evaluate(()=>({toast:document.querySelector('#toast')?.textContent,body:document.querySelector('#note-body')?.value,view:document.querySelector('#dialog-body')?.innerText})));throw e;}
+  pass('PASS PDF upload extracts fixture text using bundled PDF.js worker and standard fonts under extension CSP.');
+  const fileButton=page.locator('[data-action="file-open"]').first();await fileButton.click();
+  await page.waitForFunction(()=>document.querySelector('#pdf-page')?.width>0&&document.querySelector('#pdf-page-label')?.textContent.includes('1 / 1'));
+  pass('PASS attached PDF opens and renders a page into the annotation canvas.');
+  await page.locator('#close-dialog').click();await page.reload();await page.waitForSelector('#view');
+  const state=await worker.evaluate(async()=>(await chrome.storage.local.get('campus')).campus);
+  assert.ok(state.notes.some(n=>n.title==='PDF fixture notebook'&&n.body.includes('Photosynthesis')));
+  pass('PASS PDF metadata and note text survive workspace reload in Chrome storage.');
+  const opened=page;
+  await worker.evaluate(async()=>{const {campus}=await chrome.storage.local.get('campus');campus.settings.lmsOrigins=['https://fixture.instructure.com'];await chrome.storage.local.set({campus});});
+  assert.equal((await opened.evaluate(()=>chrome.runtime.sendMessage({type:'REGISTER'}))).ok,true);
+  const permissionState=await worker.evaluate(async()=>({all:await chrome.permissions.getAll(),registered:await chrome.scripting.getRegisteredContentScripts(),alarm:await chrome.alarms.get('reminders')}));
+  assert.equal(permissionState.registered.length,0);assert.equal(permissionState.alarm.periodInMinutes,1);
+  pass('PASS an ungranted configured LMS origin does not register content scripts; one-minute reminder alarm exists.');
+  const companion=await opened.evaluate(async()=>{try{const r=await fetch('http://127.0.0.1:4317/api/transcribe',{method:'POST',headers:{'Content-Type':'application/octet-stream'},body:new Uint8Array([0])});return {status:r.status,data:await r.json()};}catch(e){return {error:e.message};}});
+  assert.equal(companion.status,500);assert.match(companion.data.error,/WHISPER_COMMAND/);
+  pass('PASS packaged extension can reach local companion with CSP/CORS; missing Whisper configuration returns an explicit dependency error. Real transcription not verified.');
+  assert.deepEqual(errors,[]);assert.ok(!blocked.some(e=>/Content Security Policy|Refused to|worker/i.test(e)),blocked.join('\n'));
+  if (process.env.OPEN_CAMPUS_SCREENSHOT) await opened.screenshot({path:process.env.OPEN_CAMPUS_SCREENSHOT,fullPage:true});
+  pass('PASS no unhandled page errors or CSP/worker load errors in this smoke run.');
+  pass('NOT VERIFIED actual optional-host consent prompt acceptance, signed-in LMS import, production UI variants, configured Ollama/Whisper, microphone/audio, or third-party calendar/cloud services. Permission grant/revoke logic and content OPEN are covered by mocked integration tests.');
+} finally {await context.close();await rm(profile,{recursive:true,force:true});if(process.env.OPEN_CAMPUS_SMOKE_REPORT)await writeFile(process.env.OPEN_CAMPUS_SMOKE_REPORT,outcomes.join('\n')+'\n');}

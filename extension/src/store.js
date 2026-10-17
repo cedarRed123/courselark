@@ -1,0 +1,7 @@
+import {initial} from './core.js';
+export async function read(){if(globalThis.chrome?.storage){const s=await chrome.storage.local.get('campus');return s.campus||initial();}return JSON.parse(localStorage.getItem('campus')||'null')||initial();}
+export async function write(state){state.revision=crypto.randomUUID();if(globalThis.chrome?.storage)return chrome.storage.local.set({campus:state});localStorage.setItem('campus',JSON.stringify(state));}
+export function fileDB(){return new Promise((resolve,reject)=>{const request=indexedDB.open('campus-files',1);request.onupgradeneeded=()=>request.result.createObjectStore('files',{keyPath:'id'});request.onsuccess=()=>resolve(request.result);request.onerror=()=>reject(request.error);});}
+export async function filePut(file){const db=await fileDB();return new Promise((resolve,reject)=>{const tx=db.transaction('files','readwrite');tx.objectStore('files').put(file);tx.oncomplete=()=>{db.close();resolve();};tx.onerror=()=>{db.close();reject(tx.error);};});}
+export async function fileGet(id){const db=await fileDB();return new Promise((resolve,reject)=>{const r=db.transaction('files').objectStore('files').get(id);r.onsuccess=()=>{db.close();resolve(r.result);};r.onerror=()=>{db.close();reject(r.error);};});}
+export async function fileDelete(id){const db=await fileDB();return new Promise((resolve,reject)=>{const tx=db.transaction('files','readwrite');tx.objectStore('files').delete(id);tx.oncomplete=()=>{db.close();resolve();};tx.onerror=()=>{db.close();reject(tx.error);};});}
