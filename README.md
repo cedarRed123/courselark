@@ -4,7 +4,7 @@
 
 The complete source code is in [`extension/`](extension/), with setup and development instructions in its [README](extension/README.md).
 
-Download an installable ZIP from [Releases](https://github.com/cedarRed123/open-campus/releases). Each release has a source tag and a corresponding browser-extension ZIP. To load an unpacked extension, use the `extension/` directory at the desired tag. Changes to the source require repackaging before installation.
+Download an installable ZIP from [Releases](https://github.com/cedarRed123/open-campus/releases). Each release has a source tag and a corresponding browser-extension ZIP. To load an unpacked extension, use the `extension/` directory at the desired tag. Changes merged to `main` are tested and packaged automatically into a new GitHub Release. Chrome Web Store submission is available once publishing credentials are connected; see [release setup](RELEASES.md).
 
 The code is licensed under [MIT](LICENSE), so you may use, modify, and redistribute it under that license. See [third-party notices](extension/THIRD-PARTY.md) for bundled components and their licenses.
 
