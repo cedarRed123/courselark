@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {initial} from '../src/core.js';
+import {initial,legalVersion} from '../src/core.js';
 
 const origin = 'https://school.instructure.com';
 let stored = {}, registrations = [], granted = new Set(), fetchCalls = [], notificationCalls = [], panelMessages = [];
@@ -25,7 +25,7 @@ globalThis.chrome = {
 let background = await import('../src/background.js');
 const own = {id: 'test-extension', url: 'chrome-extension://test-extension/index.html'};
 function reset() {
-  stored = {campus: initial()}; stored.campus.settings.lmsOrigins = [origin];
+  stored = {campus: initial()}; stored.campus.legalAcceptance={version:legalVersion,acceptedAt:'2026-10-18T00:00:00.000Z'}; stored.campus.settings.lmsOrigins = [origin];
   registrations = [{id: 'unrelated', matches: ['https://other.test/*']}];
   granted = new Set([origin + '/*']); fetchCalls = []; notificationCalls = []; panelMessages = [];
   globalThis.location = new URL(origin + '/');
@@ -58,6 +58,13 @@ test('register only permitted origins, preserve unrelated registrations, remove 
   assert.ok(registrations.some(r => r.id === 'unrelated'));
   granted.clear(); assert.equal(await background.registerSites(), 0);
   assert.equal(registrations.length, 1);
+});
+
+test('unaccepted terms prevent LMS registration and import', async () => {
+  reset(); stored.campus.legalAcceptance=null;
+  assert.equal(await background.registerSites(),0);
+  await assert.rejects(background.handleMessage({type:'IMPORT_LMS'},own),/accept the Terms/);
+  assert.equal(registrations.length,1);
 });
 
 test('reject unsafe or overly broad site origins', () => {

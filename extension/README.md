@@ -27,14 +27,14 @@ There is no build step and no npm installation needed to use the extension. It o
 - Use custom focus/break timers, breathing duration, playlist links, agenda and motivation quote.
 - Export/import JSON backups, theme files and ICS calendars. Compose Google/Outlook calendar events (task title and time are included in provider URLs; private notes are excluded). These are exports/event links, not continuous calendar sync.
 
-## Local AI and offline transcription (optional)
+## AI through Ollama and offline transcription (optional)
 
-The core extension works without a server. AI features require a separately installed local model engine; this project does not include model weights or a paid API.
+The core extension works without a server. AI features require a separately installed Ollama service; this project does not include model weights or a paid API. Ollama may use cloud models, and Open Campus does not verify local-only mode.
 
 1. Install/run [Ollama](https://docs.ollama.com/), then download a model appropriate to your computer, for example `ollama pull qwen3:4b`.
-2. In the `open-campus` folder run `node server.mjs` with Node.js 24+. It binds only to `127.0.0.1:4317` and sends AI requests only to local Ollama on port 11434.
-3. In Settings, enter the installed model name. Choose **Check local AI**.
-4. In a notebook, **Smart notes**, **AI study set**, and **Ask about notes** use the local model. Generated answers/cards need review against your source material.
+2. In the `open-campus` folder run `node server.mjs` with Node.js 24+. It binds to `127.0.0.1:4317` and forwards AI requests to Ollama on port 11434. Ollama's own configuration determines where the model runs.
+3. In Settings, enter the model name. Choose **Check AI connection**. To keep processing on-device, use a downloaded model and [disable Ollama cloud features](https://docs.ollama.com/faq#how-do-i-disable-ollamas-cloud-features).
+4. In a notebook, **Smart notes**, **AI study set**, and **Ask about notes** send selected notes and prompts to Ollama after a confirmation. Generated answers/cards need review against your source material.
 
 For offline audio transcription, install [whisper.cpp](https://github.com/ggml-org/whisper.cpp), obtain a compatible model, and install ffmpeg. Start the companion with paths to your executables/model:
 
@@ -45,7 +45,7 @@ FFMPEG_COMMAND=/absolute/path/to/ffmpeg \
 node server.mjs
 ```
 
-Open saved audio in a notebook → **Transcribe locally**. Temporary audio is deleted after processing. Without the engine/model the UI reports the missing configuration. Real model generation and real microphone/Whisper transcription have not been verified on this machine.
+Open saved audio in a notebook → **Transcribe locally**. The companion normally deletes temporary audio and transcript files after processing; an abrupt shutdown may leave them behind. Without the engine/model the UI reports the missing configuration. Real model generation and real microphone/Whisper transcription have not been verified on this machine.
 
 The companion also serves a standalone dashboard at `http://127.0.0.1:4317`. Its browser storage is separate from extension storage; transfer ordinary data via JSON backup. LMS import/reminders require the installed extension. The transport bounds requests at 128 MB (16 MB for AI JSON) to prevent resource exhaustion, not to sell an upgrade. Local disk, memory, context window and browser limits still apply.
 

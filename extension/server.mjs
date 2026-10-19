@@ -30,4 +30,4 @@ const server=http.createServer(async(req,res)=>{
  const data=await readFile(path);res.writeHead(200,{'Content-Type':types[extname(path)]||'application/octet-stream','Cache-Control':'no-cache'});res.end(data);
  }catch(error){json(res,500,{error:error.cause?.code==='ECONNREFUSED'?'Ollama is not running at 127.0.0.1:11434. Start Ollama and install the model selected in Settings.':error.message});}
 });
-server.listen(port,host,()=>console.log(`Open Campus local companion: http://${host}:${port}. AI connects only to local Ollama.`));
+server.listen(port,host,()=>console.log(`Open Campus companion: http://${host}:${port}. AI forwards to Ollama; verify its model and cloud settings before sending notes.`));

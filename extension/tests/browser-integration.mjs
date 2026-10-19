@@ -2,12 +2,12 @@
 import assert from 'node:assert/strict';
 import {readFile, mkdir} from 'node:fs/promises';
 import {fileURLToPath} from 'node:url';
-import {initial,gpaSummary} from '../src/core.js';
+import {initial,gpaSummary,legalVersion} from '../src/core.js';
 const {chromium} = await import(process.env.OPEN_CAMPUS_PLAYWRIGHT || 'playwright');
 const contentPath = fileURLToPath(new URL('../src/content.js', import.meta.url));
 const origin = 'https://school.instructure.com';
 const source = await readFile(contentPath, 'utf8');
-const state = initial(); state.settings.lmsOrigins = [origin]; state.settings.activeAccounts = {[origin]: '7'};
+const state = initial(); state.legalAcceptance={version:legalVersion,acceptedAt:'2026-10-18T00:00:00.000Z'}; state.settings.lmsOrigins = [origin]; state.settings.activeAccounts = {[origin]: '7'};
 state.settings.mode = 'dark'; state.settings.compact = true; state.settings.hideLogo = true;
 const courseId = origin + '|user:7|course:42';
 state.courses = [{id: courseId, url: origin + '/courses/42', sourceOrigin: origin, userId: '7', grade: 93, name: 'Fall 2026 Biology', credits: 3}, {id:origin+'|user:7|course:99',url:origin+'/courses/99',sourceOrigin:origin,userId:'7',grade:91,name:'Spring 2026 History',credits:3}];

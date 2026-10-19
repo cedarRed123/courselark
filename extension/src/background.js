@@ -1,5 +1,5 @@
 import {read, write} from './store.js';
-import {mergeLMS, gpaSummary} from './core.js';
+import {mergeLMS, gpaSummary, legalVersion} from './core.js';
 
 const own = sender => sender.id === chrome.runtime.id && sender.url?.startsWith(chrome.runtime.getURL(''));
 let registrationQueue = Promise.resolve();
@@ -15,7 +15,7 @@ export function normalizeSite(value) {
 export function registerSites() {
   const run = registrationQueue.then(async () => {
     const state = await read();
-    const origins = [...new Set((state.settings.lmsOrigins || []).map(normalizeSite))];
+    const origins = state.legalAcceptance?.version===legalVersion ? [...new Set((state.settings.lmsOrigins || []).map(normalizeSite))] : [];
     const allowed = [];
     for (const origin of origins) if (await chrome.permissions.contains({origins: [origin + '/*']})) allowed.push(origin + '/*');
     const existing = await chrome.scripting.getRegisteredContentScripts({ids: ['campus-sites']});
@@ -36,12 +36,12 @@ chrome.runtime.onStartup.addListener(() => initialize().catch(console.error));
 chrome.permissions.onAdded.addListener(() => registerSites().catch(console.error));
 chrome.permissions.onRemoved.addListener(() => registerSites().catch(console.error));
 chrome.storage.onChanged.addListener((changes, area) => {
-  if (area === 'local' && changes.campus && JSON.stringify(changes.campus.oldValue?.settings?.lmsOrigins) !== JSON.stringify(changes.campus.newValue?.settings?.lmsOrigins)) registerSites().catch(console.error);
+  if (area === 'local' && changes.campus && (JSON.stringify(changes.campus.oldValue?.settings?.lmsOrigins) !== JSON.stringify(changes.campus.newValue?.settings?.lmsOrigins) || changes.campus.oldValue?.legalAcceptance?.version !== changes.campus.newValue?.legalAcceptance?.version)) registerSites().catch(console.error);
 });
 async function connectedSender(sender) {
   if (sender.id !== chrome.runtime.id || !sender.tab || !sender.url) return false;
   const origin = new URL(sender.url).origin;
-  return (await read()).settings.lmsOrigins.includes(origin) && await chrome.permissions.contains({origins: [origin + '/*']});
+  const state=await read();return state.legalAcceptance?.version===legalVersion && state.settings.lmsOrigins.includes(origin) && await chrome.permissions.contains({origins: [origin + '/*']});
 }
 export async function handleMessage(message, sender) {
   if (message.type === 'GPA_SUMMARY') {
@@ -68,6 +68,7 @@ export async function handleMessage(message, sender) {
   if (message.type === 'REGISTER') return {ok: true, connected: await registerSites()};
   if (message.type !== 'IMPORT_LMS') throw Error('Unknown operation.');
   const state = await read();
+  if(state.legalAcceptance?.version!==legalVersion)throw Error('Review and accept the Terms of Use before importing LMS data.');
   const tabs = await chrome.tabs.query({active: true, currentWindow: true});
   let tab = tabs[0];
   if (tab?.url?.startsWith(chrome.runtime.getURL(''))) {
