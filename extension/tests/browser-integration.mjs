@@ -91,8 +91,11 @@ try {
   await page.evaluate(() => {const settings=structuredClone(window.__campus.settings);settings.lmsOrigins=['https://school.instructure.com'];window.__updateCampus({settings});});
   await page.waitForSelector('#open-campus-gpa .oc-metric strong');
   assert.equal(await page.locator('#open-campus-style,#open-campus-widgets-style').count(),2);
+  await page.evaluate(() => window.__updateCampus({legalAcceptance:null}));
+  await page.waitForFunction(() => !document.querySelector('#open-campus-launch'));
+  assert.equal(await page.locator('#open-campus-gpa,#open-campus-todo,.open-campus-grade').count(),0);
   assert.deepEqual(errors, []);
-  console.log('PASS: Canvas dashboard styles, cards, grade, notes, previews, dynamic mounts, workspace launch, stale-style cleanup and disconnect restoration. No browser errors.');
+  console.log('PASS: Canvas dashboard styles, cards, grade, notes, previews, dynamic mounts, workspace launch, stale-style cleanup, disconnect and Terms-revocation restoration. No browser errors.');
   // An unconnected page is unchanged.
   const unconnected = await browser.newPage(); await unconnected.route('**/*', r => r.fulfill({contentType: 'text/html', body: fixture}));
   await unconnected.addInitScript(() => {window.chrome = {storage: {local: {get: async () => ({campus: {settings: {lmsOrigins: []}}})}}};});
