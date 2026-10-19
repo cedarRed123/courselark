@@ -1,18 +1,18 @@
-# Open Campus
+# CourseLark
 
-A free, open-source Chrome/Edge MV3 campus companion. Implemented features have **no Open Campus subscription, account requirement, paywall, paid unlock, monthly counters, or remote entitlement checks**. Open Campus is an independent, local-first alternative to BetterCampus, with original code and assets and no BetterCampus affiliation or endorsement. It is **not a complete duplicate of BetterCampus 9.8.15**. See [FEATURE-COVERAGE.md](FEATURE-COVERAGE.md) and [REA-FINDINGS.md](REA-FINDINGS.md) for verified scope and remaining gaps.
+A free, open-source Chrome/Edge MV3 campus companion. Implemented features have **no CourseLark subscription, account requirement, paywall, paid unlock, monthly counters, or remote entitlement checks**. CourseLark is an independent, local-first alternative to BetterCampus, with original code and assets and no BetterCampus affiliation or endorsement. It is **not a complete duplicate of BetterCampus 9.8.15**. See [FEATURE-COVERAGE.md](FEATURE-COVERAGE.md) and [REA-FINDINGS.md](REA-FINDINGS.md) for verified scope and remaining gaps.
 
 ## Install the extension
 
 1. Extract `open-campus.zip`, keeping its directory structure.
 2. Open `brave://extensions`, `chrome://extensions`, or `edge://extensions` and enable **Developer mode**.
 3. Choose **Load unpacked**, then select the `open-campus` folder containing `manifest.json`.
-4. Pin Open Campus, then open your school's signed-in Canvas tab.
+4. Pin CourseLark, then open your school's signed-in Canvas tab.
 5. Click the extension → **Connect this LMS site** and grant access to that exact site.
 6. Click **Import from this tab**. Reload the LMS tab if needed. Import again when assignments/grades change; imports are read-only.
-7. Click **✦ Open Campus** in Canvas navigation, or the extension icon → **Open dashboard**, to open the workspace in a panel over Canvas.
+7. Click **✦ CourseLark** in Canvas navigation, or the extension icon → **Open dashboard**, to open the workspace in a panel over Canvas.
 
-If an older unpacked Open Campus is already loaded from this folder, use **Reload** on its extension card, then reload the Canvas tab. Click **✦ Open Campus** in Canvas navigation to open a large panel within that tab. The panel closes with its × button or Escape. **Open grade planner** in the GPA widget opens directly to Grades & GPA in the same panel. The Canvas dashboard also places GPA above course cards and a week-based to-do list in the right sidebar. The GPA settings let you choose whole-letter or plus/minus grading, term, course credits, exclusions, prior GPA, and a term goal. Imported assignment completion changes only local Open Campus tracking; it never submits Canvas work.
+If an older unpacked CourseLark is already loaded from this folder, use **Reload** on its extension card, then reload the Canvas tab. Click **✦ CourseLark** in Canvas navigation to open a large panel within that tab. The panel closes with its × button or Escape. **Open grade planner** in the GPA widget opens directly to Grades & GPA in the same panel. The Canvas dashboard also places GPA above course cards and a week-based to-do list in the right sidebar. The GPA settings let you choose whole-letter or plus/minus grading, term, course credits, exclusions, prior GPA, and a term goal. Imported assignment completion changes only local CourseLark tracking; it never submits Canvas work.
 
 There is no build step and no npm installation needed to use the extension. It only decorates connected sites. Tasks, courses, notes, study sets and themes persist in extension storage. Attached files/audio and PDF ink persist in IndexedDB. Removing the extension removes its storage, so export backups and attachment files first.
 
@@ -29,7 +29,7 @@ There is no build step and no npm installation needed to use the extension. It o
 
 ## AI through Ollama and offline transcription (optional)
 
-The core extension works without a server. AI features require a separately installed Ollama service; this project does not include model weights or a paid API. Ollama may use cloud models, and Open Campus does not verify local-only mode.
+The core extension works without a server. AI features require a separately installed Ollama service; this project does not include model weights or a paid API. Ollama may use cloud models, and CourseLark does not verify local-only mode.
 
 1. Install/run [Ollama](https://docs.ollama.com/), then download a model appropriate to your computer, for example `ollama pull qwen3:4b`.
 2. In the `open-campus` folder run `node server.mjs` with Node.js 24+. It binds to `127.0.0.1:4317` and forwards AI requests to Ollama on port 11434. Ollama's own configuration determines where the model runs.
@@ -81,4 +81,4 @@ See [PRIVACY.md](PRIVACY.md). Canvas import is read-only and requires an explici
 
 ## License
 
-Original code/assets: MIT, see LICENSE. Bundled PDF.js and fflate retain their separate licenses in `src/vendor` and [THIRD-PARTY.md](THIRD-PARTY.md). Open Campus is independent of BetterCampus and LMS vendors.
+Original code/assets: MIT, see LICENSE. Bundled PDF.js and fflate retain their separate licenses in `src/vendor` and [THIRD-PARTY.md](THIRD-PARTY.md). CourseLark is independent of BetterCampus and LMS vendors.

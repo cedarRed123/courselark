@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""Package Open Campus runtime and legal notices; does not establish legal clearance.
+"""Package CourseLark runtime and legal notices; does not establish legal clearance.
 
-Usage: python3 package-open-campus.py EXTENSION_SOURCE OUTPUT_ZIP
+Usage: python3 tools/package-extension.py EXTENSION_SOURCE OUTPUT_ZIP
 Only the explicit runtime directories and legal documents below are included.
 """
 
@@ -55,7 +55,7 @@ def package(source: Path, destination: Path) -> dict:
         raise ValueError("Write the archive outside the source directory")
     destination.parent.mkdir(parents=True, exist_ok=True)
     with ZipFile(destination, "x", compression=ZIP_DEFLATED, compresslevel=9) as archive:
-        archive.comment = b"Open Campus extension. See included legal notices."
+        archive.comment = b"CourseLark extension. See included legal notices."
         for path in sorted(files):
             archive.write(path, path.relative_to(source).as_posix())
     expected = {path.relative_to(source).as_posix(): hashlib.sha256(path.read_bytes()).hexdigest() for path in files}

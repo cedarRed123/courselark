@@ -1,15 +1,15 @@
-# Open Campus Terms of Use
+# CourseLark Terms of Use
 
-**Effective October 18, 2026**
-**Version:** 2026-10-18.1
+**Effective October 19, 2026**
+**Version:** 2026-10-19.1
 **Operator:** Noah Fishman
 **Contact:** ntfishman@gmail.com
 
-These terms cover the Open Campus browser extension and optional local companion. The app asks you to select **Agree and continue** before using its dashboard or connecting an LMS account. If you do not agree, you may export or erase existing local data without accepting. A child's selection does not replace any permission or authorization required from a parent, school, or other person.
+These terms cover the CourseLark browser extension and optional local companion. The app asks you to select **Agree and continue** before using its dashboard or connecting an LMS account. If you do not agree, you may export or erase existing local data without accepting. A child's selection does not replace any permission or authorization required from a parent, school, or other person.
 
-## What Open Campus does
+## What CourseLark does
 
-Open Campus provides local tools for organizing assignments, notes, study materials, calendars, focus sessions, and estimated grades. Connecting a learning-management-system (LMS) site is optional. You must be authorized to access any school account or content you connect, and remain responsible for following school and LMS rules. Open Campus is independent and is not affiliated with, sponsored by, or endorsed by BetterCampus, Instructure, Canvas, or any educational institution.
+CourseLark provides local tools for organizing assignments, notes, study materials, calendars, focus sessions, and estimated grades. Connecting a learning-management-system (LMS) site is optional. You must be authorized to access any school account or content you connect, and remain responsible for following school and LMS rules. CourseLark is independent and is not affiliated with, sponsored by, or endorsed by BetterCampus, Instructure, Canvas, or any educational institution.
 
 The extension reads connected LMS information after you grant browser permission and initiate an import. It does not submit coursework or change official grades. GPA, grade forecasts, and due-date displays are estimates and may differ from your institution's official records. AI-generated material may be incorrect. Check original sources, the LMS, and your school's policies before making academic decisions.
 
@@ -19,11 +19,11 @@ You retain any rights you already hold in your content. Importing or recording m
 
 Data is stored in your browser profile. You are responsible for securing your device and profile, making needed backups, and handling exported files. JSON backups exclude notebook attachment blobs; export those separately. Disconnecting an LMS stops future access but does not erase previously imported records.
 
-Optional links, image hosts, calendar providers, browser speech recognition, and configured AI tools have their own terms and privacy practices. Ollama can use cloud models, so AI processing is not guaranteed to stay on your device. You are responsible for reviewing those services when you use them. Do not use Open Campus to violate law or another person's rights.
+Optional links, image hosts, calendar providers, browser speech recognition, and configured AI tools have their own terms and privacy practices. Ollama can use cloud models, so AI processing is not guaranteed to stay on your device. You are responsible for reviewing those services when you use them. Do not use CourseLark to violate law or another person's rights.
 
 ## License and availability
 
-Original Open Campus source code is offered under the [MIT License](https://github.com/cedarRed123/open-campus/blob/main/LICENSE). Third-party components retain their separate licenses and notices. These Terms do not restrict rights granted under those licenses. The extension is free, with no Open Campus subscription or paywall. Features may change. The operator may stop distributing or maintaining the software; local data remains subject to your browser's storage behavior.
+Original CourseLark source code is offered under the [MIT License](https://github.com/cedarRed123/open-campus/blob/main/LICENSE). Third-party components retain their separate licenses and notices. These Terms do not restrict rights granted under those licenses. The extension is free, with no CourseLark subscription or paywall. Features may change. The operator may stop distributing or maintaining the software; local data remains subject to your browser's storage behavior.
 
 ## Disclaimers and responsibility
 

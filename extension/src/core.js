@@ -1,5 +1,5 @@
 export const uid = () => crypto.randomUUID();
-export const legalVersion = '2026-10-18.1';
+export const legalVersion = '2026-10-19.1';
 export const dayKey = (date = new Date()) => {const d=new Date(date);return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;};
 export const themes = [
  {id:'sage',name:'Quiet campus',bg:'#f4f6f1',surface:'#ffffff',text:'#253831',accent:'#4c7663',palette:['#86a98d','#d6bc86','#a0b5d3','#bd9dba'],font:'system-ui',dark:false},
@@ -173,7 +173,7 @@ export function studyFromText(text) {
 const icsEscape = s=>String(s??'').replace(/\\/g,'\\\\').replace(/\r?\n/g,'\\n').replace(/,/g,'\\,').replace(/;/g,'\\;');
 const stamp=d=>new Date(d).toISOString().replace(/[-:]/g,'').replace(/\.\d{3}/,'');
 export function calendarICS(tasks,now=new Date()) {
- const lines=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Open Campus//Planner//EN','CALSCALE:GREGORIAN','METHOD:PUBLISH'];
+ const lines=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//CourseLark//Planner//EN','CALSCALE:GREGORIAN','METHOD:PUBLISH'];
  for(const task of tasks){const start=task.workStart||task.due;if(!start||!Number.isFinite(Date.parse(start)))continue;const end=task.workEnd||new Date(Date.parse(start)+Number(task.minutes||30)*60000);
  lines.push('BEGIN:VEVENT',`UID:${icsEscape(task.id)}@open-campus`,`DTSTAMP:${stamp(now)}`,`DTSTART:${stamp(start)}`,`DTEND:${stamp(end)}`,`SUMMARY:${icsEscape(task.title)}`,`DESCRIPTION:${icsEscape(task.notes||'')}`,`STATUS:${task.done?'CANCELLED':'CONFIRMED'}`,'END:VEVENT');}
  lines.push('END:VCALENDAR');

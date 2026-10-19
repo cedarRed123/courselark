@@ -18,7 +18,7 @@ try {
   const worker=context.serviceWorkers()[0]||await context.waitForEvent('serviceworker',{timeout:15000});
   const id=worker.url().split('/')[2], root=`chrome-extension://${id}/`;
   const identity=await worker.evaluate(async()=>({manifest:chrome.runtime.getManifest(),stored:await chrome.storage.local.get('campus'),grants:await chrome.permissions.getAll()}));
-  assert.equal(identity.manifest.name,'Open Campus');
+  assert.equal(identity.manifest.name,'CourseLark');
   await worker.evaluate(async()=>{for(let i=0;i<20;i++){if((await chrome.storage.local.get('campus')).campus)return;await new Promise(r=>setTimeout(r,100));}throw Error('Initial storage missing');});
   pass('PASS real unpacked Manifest V3 extension loads; module service worker starts and initializes extension storage.');
   const page=await context.newPage();page.on('pageerror',e=>{errors.push(e.message);console.log('PAGE ERROR',e.message);});

@@ -59,12 +59,12 @@ export async function handleMessage(message, sender) {
     const tab=sender.tab&&!own(sender)?sender.tab:(await chrome.tabs.query({active:true,currentWindow:true}))[0];
     if(!tab?.id||!tab.url)throw Error('Open your connected Canvas tab first.');
     const origin=new URL(tab.url).origin;
-    if(!(await read()).settings.lmsOrigins.includes(origin)||!(await chrome.permissions.contains({origins:[origin+'/*']})))throw Error('Connect this Canvas tab in Open Campus first.');
+    if(!(await read()).settings.lmsOrigins.includes(origin)||!(await chrome.permissions.contains({origins:[origin+'/*']})))throw Error('Connect this Canvas tab in CourseLark first.');
     const response=await chrome.tabs.sendMessage(tab.id,{type:'OPEN_PANEL',page:message.page||'dashboard'});
-    if(!response?.ok)throw Error('Reload this Canvas tab, then try opening Open Campus again.');
+    if(!response?.ok)throw Error('Reload this Canvas tab, then try opening CourseLark again.');
     return {ok:true};
   }
-  if (!own(sender)) throw Error('This action is available only from the Open Campus extension.');
+  if (!own(sender)) throw Error('This action is available only from the CourseLark extension.');
   if (message.type === 'REGISTER') return {ok: true, connected: await registerSites()};
   if (message.type !== 'IMPORT_LMS') throw Error('Unknown operation.');
   const state = await read();

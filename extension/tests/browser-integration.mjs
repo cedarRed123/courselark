@@ -64,7 +64,7 @@ try {
   await page.locator('#open-campus-launch').click();
   assert.equal(await page.locator('#open-campus-panel[open]').count(),1);
   assert.match(await page.locator('#open-campus-panel iframe').getAttribute('src'),/index\.html$/);
-  await page.locator('#open-campus-panel .oc-panel-bar').getByRole('button',{name:'Close Open Campus panel'}).click();
+  await page.locator('#open-campus-panel .oc-panel-bar').getByRole('button',{name:'Close CourseLark panel'}).click();
   await page.locator('#open-campus-panel').waitFor({state:'detached'});
   await page.evaluate(()=>window.__contentListeners.forEach(fn=>fn({type:'OPEN_PANEL',page:'grades'},{},()=>{})));
   assert.match(await page.locator('#open-campus-panel iframe').getAttribute('src'),/#grades$/);
