@@ -4,6 +4,8 @@ Prepared October 19, 2026 for the **CourseLark 0.3.3 review candidate**. This is
 
 Google says extensions must disclose user-data handling even when processing and storage remain on the user's device. The Web Store privacy form asks for a single purpose, permission justifications, remote-code declaration, data categories, limited-use certifications, and a policy URL. Inconsistencies among code, the dashboard, and the policy can lead to enforcement. Sources: [User Data FAQ](https://developer.chrome.com/docs/webstore/program-policies/user-data-faq/), [privacy-fields guide](https://developer.chrome.com/docs/webstore/cws-dashboard-privacy/), [disclosure requirements](https://developer.chrome.com/docs/webstore/program-policies/disclosure-requirements/).
 
+The candidate popup and dashboard now show a concise data-and-optional-transfer summary before **Agree and continue**. The real-extension smoke test checks both surfaces before acceptance. This in-product notice does not replace the separate pre-installation Web Store disclosure or authorize any optional third-party transfer by itself.
+
 ## Proposed single purpose
 
 Organize and study coursework from user-connected LMS sites in a browser workspace. The dashboard, assignment list, GPA estimates, notebooks, study tools, themes, and optional reminders serve that purpose. The optional local companion supports note-based study and transcription; it is not required for core coursework organization. Confirm this wording fits the actual dashboard field and product scope.

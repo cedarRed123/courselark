@@ -24,6 +24,7 @@ try {
   const page=await context.newPage();page.on('pageerror',e=>{errors.push(e.message);console.log('PAGE ERROR',e.message);});
   const blocked=[];page.on('console',m=>{if(m.type()==='error'){blocked.push(m.text());console.log('CONSOLE ERROR',m.text());}});
   await page.goto(root+'index.html');await page.locator('[data-action="legal-accept"]').waitFor();
+  assert.match(await page.locator('#view').textContent(),/Canvas profile identifier.*notes, files, and study activity.*Optional transfers:/s);
   await page.locator('[data-action="legal-accept"]').click();await page.waitForSelector('.hero');
   assert.match(await page.locator('#view').textContent(),/Find your rhythm/);
   pass('PASS packaged extension workspace loads its ES modules and styles under real extension CSP.');
@@ -72,6 +73,7 @@ try {
   assert.equal((await worker.evaluate(async()=>chrome.storage.local.get('campus-companion-token')))['campus-companion-token'],undefined);
   pass('PASS clear-data control removes current-origin records, acceptance, pairing code and attachment blobs.');
   await page.goto(root+'popup.html');await page.locator('#legal:visible').waitFor();
+  assert.match(await page.locator('#legal').textContent(),/Canvas profile identifier.*notes, files, and study activity.*Optional transfers:/s);
   assert.equal(await page.locator('#controls:visible').count(),0);
   await page.locator('#agree').click();await page.locator('#controls:visible').waitFor();
   pass('PASS extension popup requires an explicit agreement before showing LMS controls.');
