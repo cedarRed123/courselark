@@ -8,4 +8,12 @@ for(const game of ['Match','Blocks','Blast','Charms']){await page.getByRole('but
 await page.getByRole('link',{name:'Appearance',exact:true}).click();await page.getByRole('button',{name:'Apply',exact:true}).nth(1).click();await page.getByRole('button',{name:'＋ Create theme'}).click();await page.locator('#theme-form [name=name]').fill('My study theme');await page.getByRole('button',{name:'Save & apply'}).click();assert.ok(await page.getByText('My study theme',{exact:true}).count());
 await page.getByRole('link',{name:'Focus room'}).click();await page.getByRole('button',{name:'Start / Pause'}).click();await page.waitForFunction(()=>document.querySelector('#timer-display').textContent!=='25:00',{},{timeout:3000});await page.getByRole('button',{name:'Start / Pause'}).click();
 await page.getByRole('link',{name:'Assignments',exact:true}).click();await page.getByRole('checkbox',{name:'Complete Read chapter 4'}).click();await page.reload();await page.locator('#task-filter').selectOption('done');await page.getByText('Read chapter 4',{exact:true}).waitFor();
-await page.getByRole('link',{name:'Overview',exact:true}).click();await page.getByRole('heading',{name:'Your campus, at your pace.'}).waitFor();if(process.env.OPEN_CAMPUS_SCREENSHOT)await page.screenshot({path:process.env.OPEN_CAMPUS_SCREENSHOT,fullPage:true});assert.deepEqual(errors,[]);console.log('UI smoke passed: task/class/note/set CRUD, what-if, flip/quiz, all games, theme builder, timer and reload persistence; no browser errors.');await browser.close();
+await page.getByRole('link',{name:'Assignments',exact:true}).click();
+await page.getByRole('button',{name:'＋ Add assignment'}).click();
+const hostileTitle='<img src=x onerror="window.__courseLarkXss=true">';
+await page.locator('#task-form [name=title]').fill(hostileTitle);
+await page.getByRole('button',{name:'Save assignment'}).click();
+await page.getByText(hostileTitle,{exact:true}).waitFor();
+assert.equal(await page.locator('#task-list img').count(),0);
+assert.equal(await page.evaluate(()=>window.__courseLarkXss),undefined);
+await page.getByRole('link',{name:'Overview',exact:true}).click();await page.getByRole('heading',{name:'Your campus, at your pace.'}).waitFor();if(process.env.OPEN_CAMPUS_SCREENSHOT)await page.screenshot({path:process.env.OPEN_CAMPUS_SCREENSHOT,fullPage:true});assert.deepEqual(errors,[]);console.log('UI smoke passed: task/class/note/set CRUD, what-if, flip/quiz, all games, theme builder, timer and reload persistence; hostile assignment text rendered inert; no browser errors.');await browser.close();
