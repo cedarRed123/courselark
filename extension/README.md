@@ -4,9 +4,9 @@ A free, open-source Chrome/Edge MV3 campus companion. Implemented features have 
 
 ## Install the extension
 
-1. Extract `open-campus.zip`, keeping its directory structure.
+1. Extract the CourseLark extension ZIP, keeping its directory structure.
 2. Open `brave://extensions`, `chrome://extensions`, or `edge://extensions` and enable **Developer mode**.
-3. Choose **Load unpacked**, then select the `open-campus` folder containing `manifest.json`.
+3. Choose **Load unpacked**, then select the extracted folder containing `manifest.json`.
 4. Pin CourseLark, then open your school's signed-in Canvas tab.
 5. Click the extension → **Connect this LMS site** and grant access to that exact site.
 6. Click **Import from this tab**. Reload the LMS tab if needed. Import again when assignments/grades change; imports are read-only.
@@ -32,7 +32,7 @@ There is no build step and no npm installation needed to use the extension. It o
 The core extension works without a server. AI features require a separately installed Ollama service; this project does not include model weights or a paid API. Ollama may use cloud models, and CourseLark does not verify local-only mode.
 
 1. Install/run [Ollama](https://docs.ollama.com/), then download a model appropriate to your computer, for example `ollama pull qwen3:4b`.
-2. In the `open-campus` folder run `node server.mjs` with Node.js 24+. It binds to `127.0.0.1:4317` and forwards AI requests to Ollama on port 11434. Ollama's own configuration determines where the model runs.
+2. In the extracted extension folder run `node server.mjs` with Node.js 24+. It binds to `127.0.0.1:4317` and forwards AI requests to Ollama on port 11434. Ollama's own configuration determines where the model runs.
 3. Copy the 64-character pairing code printed in the companion terminal into **Settings → Companion pairing code** in each browser profile where you use AI or local transcription. The code changes each time the companion starts. To keep one code across restarts, set `CAMPUS_PAIRING_TOKEN` to your own random 64-character hexadecimal value in your local shell environment. Keep it private; do not commit it, send it to support, or include it in a screenshot. JSON backups do not include the saved browser pairing code.
 4. In Settings, enter the model name. Choose **Check AI connection**. To keep processing on-device, use a downloaded model and [disable Ollama cloud features](https://docs.ollama.com/faq#how-do-i-disable-ollamas-cloud-features).
 5. In a notebook, **Smart notes**, **AI study set**, and **Ask about notes** send selected notes and prompts to Ollama after a confirmation. Generated answers/cards need review against your source material.

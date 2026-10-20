@@ -40,7 +40,7 @@ These are documentation-derived requirements. The 9.8.15 extension bundle and an
 
 ## Original implementation and remaining parity distinctions
 
-Open Campus uses original code and assets. It does not call BetterCampus's private backend or forge paid access. All implemented features are available without a subscription.
+The operator reports that CourseLark uses original application code and assets apart from its documented packages; see `PROVENANCE.md` for the scope and remaining rights review. It does not call BetterCampus's private backend or forge paid access. All implemented features are available without a subscription.
 
 - Local theme sharing/import is not a hosted community with public reactions/review.
 - Local progress/companions are not a friends network.
