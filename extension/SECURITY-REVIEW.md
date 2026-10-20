@@ -31,3 +31,7 @@ Limitations: the tests use synthetic Canvas fixtures and an isolated Chromium pr
 ## Store status
 
 On October 17, 2026, the user showed an existing Chrome Web Store publisher account. Open Campus 0.3.1 was uploaded there as draft item `neblllanaehpdoinopcpemcmnfnfppml`. The store description, Education category, English (United States) language, icon, synthetic screenshot, permission explanations, and data-use categories were saved. It has not been submitted for review or published. The dashboard requires a public privacy-policy URL, publisher contact email and its verification, and data-use certifications before submission.
+
+## October 19 companion hardening candidate
+
+The v0.3.3 review branch requires a 64-character pairing code for companion AI and transcription POST requests. The code appears in the local companion terminal, is entered in Settings, and is stored in the browser outside JSON backups. The server rejects unpaired requests before invoking Ollama or Whisper. It remains a bearer secret: anyone who obtains it while the companion runs can use those endpoints, and this does not establish that a configured Ollama model processes data only on-device. This candidate has not been published.

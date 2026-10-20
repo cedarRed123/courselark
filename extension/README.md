@@ -33,8 +33,9 @@ The core extension works without a server. AI features require a separately inst
 
 1. Install/run [Ollama](https://docs.ollama.com/), then download a model appropriate to your computer, for example `ollama pull qwen3:4b`.
 2. In the `open-campus` folder run `node server.mjs` with Node.js 24+. It binds to `127.0.0.1:4317` and forwards AI requests to Ollama on port 11434. Ollama's own configuration determines where the model runs.
-3. In Settings, enter the model name. Choose **Check AI connection**. To keep processing on-device, use a downloaded model and [disable Ollama cloud features](https://docs.ollama.com/faq#how-do-i-disable-ollamas-cloud-features).
-4. In a notebook, **Smart notes**, **AI study set**, and **Ask about notes** send selected notes and prompts to Ollama after a confirmation. Generated answers/cards need review against your source material.
+3. Copy the 64-character pairing code printed in the companion terminal into **Settings → Companion pairing code** in each browser profile where you use AI or local transcription. The code changes each time the companion starts. To keep one code across restarts, set `CAMPUS_PAIRING_TOKEN` to your own random 64-character hexadecimal value in your local shell environment. Keep it private; do not commit it, send it to support, or include it in a screenshot. JSON backups do not include the saved browser pairing code.
+4. In Settings, enter the model name. Choose **Check AI connection**. To keep processing on-device, use a downloaded model and [disable Ollama cloud features](https://docs.ollama.com/faq#how-do-i-disable-ollamas-cloud-features).
+5. In a notebook, **Smart notes**, **AI study set**, and **Ask about notes** send selected notes and prompts to Ollama after a confirmation. Generated answers/cards need review against your source material.
 
 For offline audio transcription, install [whisper.cpp](https://github.com/ggml-org/whisper.cpp), obtain a compatible model, and install ffmpeg. Start the companion with paths to your executables/model:
 
@@ -71,7 +72,7 @@ npx playwright install chromium
 npm run test:browser
 ```
 
-Start `node server.mjs` in another terminal before browser tests. `npm run test:extension` checks the actual unpacked extension in an isolated Chrome profile.
+Start `node server.mjs` in another terminal before browser tests. For `npm run test:extension`, set `CAMPUS_PAIRING_TOKEN` to the same 64-character value in both the companion and test processes. `npm run test:extension` checks the actual unpacked extension in an isolated Chrome profile.
 
 `tests/VERIFICATION.md` records actual results, fixture scope, and limitations. The REA source analysis identifies the older repository; it does not prove current production extension behavior. No BetterCampus source, artwork, hosted themes, or private service credentials are bundled.
 
