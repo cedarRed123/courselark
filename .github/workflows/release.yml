@@ -1,0 +1,96 @@
+name: Test and release extension
+on:
+  pull_request:
+    paths: ['extension/**', 'scripts/**', '.github/workflows/release.yml']
+  push:
+    branches: [main]
+    paths: ['extension/**', 'scripts/**', '.github/workflows/release.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: extension-release-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    outputs:
+      base_version: ${{ steps.source_version.outputs.base_version }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: extension/package-lock.json
+      - id: source_version
+        run: echo "base_version=$(node -p 'require("./extension/package.json").version')" >> "$GITHUB_OUTPUT"
+      - run: npm ci
+        working-directory: extension
+      - run: npm test
+        working-directory: extension
+      - run: node --test scripts/*.test.mjs
+      - run: python3 scripts/package-extension.py "$GITHUB_RUN_NUMBER"
+      - run: npx playwright install --with-deps chromium
+        working-directory: extension
+      - name: Browser and installed extension tests
+        working-directory: extension
+        run: |
+          node server.mjs > /tmp/open-campus-server.log 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid" || true' EXIT
+          for attempt in {1..30}; do
+            if curl --fail --silent http://127.0.0.1:4317/ > /dev/null; then break; fi
+            sleep 1
+          done
+          npm run test:browser
+          npm run test:extension
+  release:
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request' && vars.RELEASE_APPROVED_VERSION == needs.test.outputs.base_version
+    needs: test
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    outputs:
+      version: ${{ steps.package.outputs.version }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - id: package
+        run: python3 scripts/package-extension.py "$GITHUB_RUN_NUMBER"
+      - name: Create GitHub Release with installable ZIP and checksum
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.package.outputs.version }}
+        run: |
+          if gh release view "v$VERSION" > /dev/null 2>&1; then
+            echo "Release v$VERSION already exists; preserving its assets."
+          else
+            gh release create "v$VERSION" dist/* --target "$GITHUB_SHA" --title "CourseLark $VERSION" --generate-notes --notes 'Install the attached ZIP. The source tag records the input commit; CI adds the build number to the packaged manifest. Chrome Web Store submission runs separately and remains subject to Google review.'
+          fi
+  chrome:
+    if: vars.CWS_ENABLED == 'true'
+    needs: release
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '24'
+      - name: Download the exact released ZIP
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ needs.release.outputs.version }}
+        run: |
+          gh release download "v$VERSION" --dir dist --pattern '*.zip' --pattern '*.sha256'
+          cd dist
+          sha256sum --check *.sha256
+      - name: Upload and submit for Chrome review
+        env:
+          CWS_SERVICE_ACCOUNT_JSON: ${{ secrets.CWS_SERVICE_ACCOUNT_JSON }}
+          CWS_PUBLISHER_ID: ${{ vars.CWS_PUBLISHER_ID }}
+          CWS_EXTENSION_ID: ${{ vars.CWS_EXTENSION_ID }}
+          RELEASE_VERSION: ${{ needs.release.outputs.version }}
+        run: node scripts/publish-chrome.mjs "dist/courselark-$RELEASE_VERSION.zip"
