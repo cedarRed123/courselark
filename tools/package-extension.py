@@ -23,7 +23,7 @@ def package(source: Path, destination: Path) -> dict:
         "src/vendor/FFLATE-LICENSE", "src/vendor/PDFJS-LICENSE",
         "src/vendor/standard_fonts/LICENSE_FOXIT",
         "src/vendor/standard_fonts/LICENSE_LIBERATION",
-        "icons/icon.png",
+        "icons/icon.png", "icons/icon.svg",
     ]
     for name in required:
         path = source / name
