@@ -36,6 +36,8 @@ jobs:
         working-directory: extension
       - name: Browser and installed extension tests
         working-directory: extension
+        env:
+          CAMPUS_PAIRING_TOKEN: bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
         run: |
           node server.mjs > /tmp/open-campus-server.log 2>&1 &
           server_pid=$!
