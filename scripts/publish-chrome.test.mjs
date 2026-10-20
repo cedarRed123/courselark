@@ -1,7 +1,9 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
+import {generateKeyPairSync} from 'node:crypto';
 import {publish} from './publish-chrome.mjs';
 const revision = (state, version) => ({state, distributionChannels:[{crxVersion:version}]});
+const {privateKey} = generateKeyPairSync('rsa', {modulusLength:2048,privateKeyEncoding:{type:'pkcs8',format:'pem'},publicKeyEncoding:{type:'spki',format:'pem'}});
 async function run(responses) {
   const calls=[];
   await publish({token:'test-token',publisher:'publisher',item:'item',version:'0.3.2.1',archive:new URL('../extension/manifest.json',import.meta.url),sleep:async()=>{},request:async(url,options)=>{
@@ -18,6 +20,16 @@ test('waits for upload before submitting',async()=>{
   assert.match(calls[1].url,/\/upload\/v2\//);
   assert.match(calls[2].url,/:fetchStatus$/);
   assert.equal(JSON.parse(calls[3].options.body).publishType,'DEFAULT_PUBLISH');
+});
+test('authenticates directly with a service-account JWT before using the Chrome API',async()=>{
+  const calls=[];
+  await publish({serviceAccount:{type:'service_account',client_email:'release@example.iam.gserviceaccount.com',private_key:privateKey},publisher:'publisher',item:'item',version:'0.3.2.1',archive:new URL('../extension/manifest.json',import.meta.url),sleep:async()=>{},request:async(url,options)=>{
+    calls.push({url,options});
+    if(url==='https://oauth2.googleapis.com/token') return {ok:true,status:200,json:async()=>({access_token:'short-lived-token'})};
+    return {ok:true,status:200,json:async()=>({publishedItemRevisionStatus:revision('PUBLISHED','0.3.2.1')})};
+  }});
+  assert.equal(calls.length,2);
+  assert.equal(calls[1].options.headers.Authorization,'Bearer short-lived-token');
 });
 test('does not submit a failed upload',async()=>{
   await assert.rejects(run([{}, {uploadState:'FAILED'}]),/did not succeed/);

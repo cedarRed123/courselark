@@ -1,7 +1,9 @@
 import {readFile} from 'node:fs/promises';
 import {pathToFileURL} from 'node:url';
+import {getAccessToken} from './google-access-token.mjs';
 
-export async function publish({token, publisher, item, version, archive, request = fetch, sleep = ms => new Promise(r => setTimeout(r, ms))}) {
+export async function publish({token, serviceAccount, publisher, item, version, archive, request = fetch, sleep = ms => new Promise(r => setTimeout(r, ms))}) {
+  if (!token && serviceAccount) token = await getAccessToken(serviceAccount, {request});
   if (!token || !publisher || !item || !version) throw Error('Chrome publishing credentials and IDs are required');
   const name = `publishers/${encodeURIComponent(publisher)}/items/${encodeURIComponent(item)}`;
   const api = `https://chromewebstore.googleapis.com/v2/${name}`;
@@ -35,5 +37,6 @@ export async function publish({token, publisher, item, version, archive, request
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
-  await publish({token:process.env.CWS_ACCESS_TOKEN, publisher:process.env.CWS_PUBLISHER_ID, item:process.env.CWS_EXTENSION_ID, version:process.env.RELEASE_VERSION, archive:process.argv[2]});
+  const serviceAccount = process.env.CWS_SERVICE_ACCOUNT_JSON ? JSON.parse(process.env.CWS_SERVICE_ACCOUNT_JSON) : undefined;
+  await publish({token:process.env.CWS_ACCESS_TOKEN, serviceAccount, publisher:process.env.CWS_PUBLISHER_ID, item:process.env.CWS_EXTENSION_ID, version:process.env.RELEASE_VERSION, archive:process.argv[2]});
 }

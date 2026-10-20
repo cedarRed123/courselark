@@ -14,6 +14,8 @@ The existing Open Campus item is `neblllanaehpdoinopcpemcmnfnfppml`. Its initial
 4. Set repository Actions variables `CWS_PUBLISHER_ID` (Publisher > Settings in the developer dashboard), `CWS_EXTENSION_ID` (the item ID above), and `CWS_ENABLED=true`.
 5. Run **Test and release extension** from the Actions tab on `main` to verify the connection and submit a new build after the current review finishes.
 
+The publisher job signs a short-lived JWT with the service-account key and exchanges it at Google's OAuth token endpoint for a Chrome Web Store-scoped access token. This avoids granting the service account token-creator permissions on itself or at the project level. The key remains a long-lived credential, so restrict access to the GitHub secret and rotate it if exposed.
+
 Until this connection is complete, `CWS_ENABLED=false` leaves Chrome submission disabled while GitHub Releases continue to work. A signed-in browser session alone cannot authorize GitHub's hosted runner.
 
 ## Failures and review
