@@ -25,6 +25,14 @@ try {
   const blocked=[];page.on('console',m=>{if(m.type()==='error'){blocked.push(m.text());console.log('CONSOLE ERROR',m.text());}});
   await page.goto(root+'index.html');await page.locator('[data-action="legal-accept"]').waitFor();
   assert.match(await page.locator('#view').textContent(),/Canvas profile identifier.*notes, files, and study activity.*Optional transfers:/s);
+  for (const [label, phrase] of [['Terms of Use','Version: 2026-10-19.1'],['Privacy Policy','Effective October 19, 2026']]) {
+    const [legalPage]=await Promise.all([context.waitForEvent('page'),page.getByRole('link',{name:label}).first().click()]);
+    await legalPage.waitForLoadState();
+    assert.equal(new URL(legalPage.url()).origin,new URL(root).origin);
+    assert.match(await legalPage.locator('article').innerText(),new RegExp(phrase));
+    await legalPage.close();
+  }
+  pass('PASS acceptance links open the exact candidate Terms and Privacy pages bundled inside the extension.');
   await page.locator('[data-action="legal-accept"]').click();await page.waitForSelector('.hero');
   assert.match(await page.locator('#view').textContent(),/Find your rhythm/);
   pass('PASS packaged extension workspace loads its ES modules and styles under real extension CSP.');

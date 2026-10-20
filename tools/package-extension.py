@@ -9,6 +9,7 @@ from pathlib import Path
 import argparse
 import hashlib
 import json
+import re
 from zipfile import ZIP_DEFLATED, ZipFile
 
 
@@ -16,7 +17,7 @@ def package(source: Path, destination: Path) -> dict:
     source = source.resolve(strict=True)
     destination = destination.resolve()
     required = [
-        "manifest.json", "index.html", "popup.html",
+        "manifest.json", "index.html", "popup.html", "legal/privacy.html", "legal/terms.html",
         "LICENSE", "PRIVACY.md", "TERMS.md", "THIRD-PARTY.md",
         "src/app.css", "src/app.js", "src/background.js", "src/content.js",
         "src/core.js", "src/games.js", "src/popup.js", "src/store.js",
@@ -33,6 +34,14 @@ def package(source: Path, destination: Path) -> dict:
     package_json = json.loads((source / "package.json").read_text())
     if manifest["version"] != package_json["version"]:
         raise ValueError("Manifest and package.json versions differ")
+    core = (source / "src/core.js").read_text()
+    match = re.search(r"export const legalVersion = '([^']+)'", core)
+    if not match:
+        raise ValueError("Cannot find the extension Terms version")
+    terms_version = match.group(1)
+    for name, marker in (("TERMS.md", "**Version:** "), ("legal/terms.html", "<strong>Version:</strong> ")):
+        if marker + terms_version not in (source / name).read_text():
+            raise ValueError(f"{name} does not match the extension Terms version")
     files = {source / name for name in required}
     # Explicitly retain runtime code, vendored modules, fonts and notices.
     for directory in ("src", "icons"):

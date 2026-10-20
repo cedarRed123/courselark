@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Render the bundled Markdown policies into the existing GitHub Pages layouts."""
+"""Render Markdown policies for GitHub Pages and bundled extension legal pages."""
 
 from html import escape
 from pathlib import Path
@@ -61,8 +61,8 @@ def render(markdown: str) -> str:
     return '\n'.join(blocks)
 
 
-for source, target in ((ROOT / 'extension/PRIVACY.md', ROOT / 'privacy/index.html'),
-                       (ROOT / 'extension/TERMS.md', ROOT / 'terms/index.html')):
+for name, source, target in (('privacy', ROOT / 'extension/PRIVACY.md', ROOT / 'privacy/index.html'),
+                             ('terms', ROOT / 'extension/TERMS.md', ROOT / 'terms/index.html')):
     current = target.read_text()
     rendered = render(source.read_text())
     updated, count = re.subn(r'(?<=<article>).*?(?=</article>)', lambda _: rendered,
@@ -70,3 +70,17 @@ for source, target in ((ROOT / 'extension/PRIVACY.md', ROOT / 'privacy/index.htm
     if count != 1:
         raise SystemExit(f'Missing article in {target}')
     target.write_text(updated)
+    style = re.search(r'<style>.*?</style>', current, flags=re.DOTALL)
+    if not style:
+        raise SystemExit(f'Missing style in {target}')
+    title = 'Privacy Policy' if name == 'privacy' else 'Terms of Use'
+    local = (f'<!doctype html><html lang="en"><head><meta charset="utf-8">'
+             f'<meta name="viewport" content="width=device-width,initial-scale=1">'
+             f'<title>CourseLark · {title}</title>\n{style.group()}\n'
+             f'</head><body><header><div class="brand">✳ CourseLark</div>'
+             f'<nav><a href="../index.html">Dashboard</a><a href="privacy.html">Privacy</a>'
+             f'<a href="terms.html">Terms</a></nav></header><main><article>{rendered}</article></main>'
+             f'<footer>© 2026 Noah Fishman</footer></body></html>\n')
+    local_target = ROOT / 'extension/legal' / f'{name}.html'
+    local_target.parent.mkdir(parents=True, exist_ok=True)
+    local_target.write_text(local)
