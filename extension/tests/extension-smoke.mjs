@@ -65,6 +65,7 @@ try {
   const [backupChooser]=await Promise.all([page.waitForEvent('filechooser'),page.locator('[data-action="backup-import"]').click()]);
   await backupChooser.setFiles(backupPath);
   await page.waitForFunction(async()=>((await chrome.storage.local.get('campus')).campus.notes.length===0));
+  await page.waitForFunction(async()=>(await (await import('./src/store.js')).fileKeys()).length===0);
   assert.deepEqual(await page.evaluate(async()=>(await import('./src/store.js')).fileKeys()),[]);
   pass('PASS backup replacement removes old notebook records and orphaned IndexedDB attachments.');
   const token=process.env.CAMPUS_PAIRING_TOKEN;
@@ -76,6 +77,7 @@ try {
   await page.evaluate(async()=>{const {filePut}=await import('./src/store.js');await filePut({id:'erase-me',blob:new Blob(['delete me'])});});
   page.once('dialog',dialog=>dialog.accept());await page.locator('[data-action="data-clear"]').click();
   await page.waitForFunction(async()=>((await chrome.storage.local.get('campus')).campus.legalAcceptance===null));
+  await page.waitForFunction(async()=>(await (await import('./src/store.js')).fileKeys()).length===0);
   assert.deepEqual(await page.evaluate(async()=>(await import('./src/store.js')).fileKeys()),[]);
   assert.equal((await worker.evaluate(async()=>(await chrome.storage.local.get('campus')).campus)).notes.length,0);
   assert.equal((await worker.evaluate(async()=>chrome.storage.local.get('campus-companion-token')))['campus-companion-token'],undefined);
