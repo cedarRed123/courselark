@@ -26,6 +26,10 @@ jobs:
           cache-dependency-path: extension/package-lock.json
       - id: source_version
         run: echo "base_version=$(node -p 'require("./extension/package.json").version')" >> "$GITHUB_OUTPUT"
+      - name: Check generated policy pages
+        run: |
+          python3 tools/render-policies.py
+          git diff --exit-code
       - run: npm ci
         working-directory: extension
       - run: npm test
