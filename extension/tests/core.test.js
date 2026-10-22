@@ -24,3 +24,12 @@ test('assignment what-if applies drop rules, never-drop, and course weighting ch
  // Drop rules never remove the last scored assignment in a group.
  assert.equal(assignmentGrade([{id:'x',group:1,score:7,points:10}],[{id:1,weight:100,dropLowest:3}]),70);
 });
+
+test('playlist embeds only map known providers to their HTTPS embed players',async()=>{
+ const {embedURL}=await import('../src/core.js');
+ assert.equal(embedURL('https://open.spotify.com/playlist/37i9dQZF1DX8NTLI2TtZa6?si=x'),'https://open.spotify.com/embed/playlist/37i9dQZF1DX8NTLI2TtZa6');
+ assert.equal(embedURL('https://www.youtube.com/watch?v=jfKfPfyJRdk&list=PL123_abc'),'https://www.youtube-nocookie.com/embed/videoseries?list=PL123_abc');
+ assert.equal(embedURL('https://youtu.be/jfKfPfyJRdk'),'https://www.youtube-nocookie.com/embed/jfKfPfyJRdk');
+ assert.equal(embedURL('https://music.apple.com/us/playlist/focus/pl.u-abc'),'https://embed.music.apple.com/us/playlist/focus/pl.u-abc');
+ for(const bad of ['javascript:alert(1)','http://open.spotify.com/playlist/x','https://evil.example/playlist/x','https://www.youtube.com/watch?v="><script>']) assert.equal(embedURL(bad),'');
+});
