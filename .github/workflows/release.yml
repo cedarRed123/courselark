@@ -43,7 +43,7 @@ jobs:
         env:
           CAMPUS_PAIRING_TOKEN: bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
         run: |
-          node server.mjs > /tmp/open-campus-server.log 2>&1 &
+          node server.mjs > /tmp/courselark-server.log 2>&1 &
           server_pid=$!
           trap 'kill "$server_pid" || true' EXIT
           for attempt in {1..30}; do

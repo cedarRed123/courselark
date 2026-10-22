@@ -1,6 +1,6 @@
 # Integration verification
 
-Checked October 15, 2026. Open Campus 0.3.0. Playwright 1.64.1 / Chrome for Testing 156.0.8078.4 on macOS arm64. Automated test browsing used isolated profiles or synthetic fixtures. The live signed-in Canvas page and BetterCampus settings were inspected in Brave for layout and behavior comparison. Open Campus 0.3.0 was reloaded in that Brave profile, and both its Canvas navigation button and toolbar popup opened the workspace within the existing Canvas tab.
+Checked October 15, 2026. CourseLark 0.3.0. Playwright 1.64.1 / Chrome for Testing 156.0.8078.4 on macOS arm64. Automated test browsing used isolated profiles or synthetic fixtures. The live signed-in Canvas page and BetterCampus settings were inspected in Brave for layout and behavior comparison. CourseLark 0.3.0 was reloaded in that Brave profile, and both its Canvas navigation button and toolbar popup opened the workspace within the existing Canvas tab.
 
 ## Passed
 
@@ -36,7 +36,7 @@ Run `npm test` for all 21 Node tests.
 
 With Playwright and its browser installed and the companion running, run `npm run test:browser` for the UI, injected-page and game checks.
 
-Start `node server.mjs` in another terminal, then run `node tests/extension-smoke.mjs`. If Playwright is installed elsewhere, set `OPEN_CAMPUS_PLAYWRIGHT` to the absolute path of its `index.mjs`. Optional `OPEN_CAMPUS_SCREENSHOT` and `OPEN_CAMPUS_SMOKE_REPORT` save outputs. The smoke creates and removes its own temporary browser profile. `tests/fixture.pdf` is an original synthetic one-page test document.
+Start `node server.mjs` in another terminal, then run `node tests/extension-smoke.mjs`. If Playwright is installed elsewhere, set `COURSELARK_PLAYWRIGHT` to the absolute path of its `index.mjs`. Optional `COURSELARK_SCREENSHOT` and `COURSELARK_SMOKE_REPORT` save outputs. The smoke creates and removes its own temporary browser profile. `tests/fixture.pdf` is an original synthetic one-page test document.
 
 
 ## 0.3.1 release security pass (October 15, 2026)

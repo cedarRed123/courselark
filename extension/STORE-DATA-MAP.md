@@ -49,7 +49,7 @@ The code review found no built-in analytics, advertising, data sale, password ex
 
 1. Open the **same publisher item** and inspect the actual Privacy practices selections; record the item ID, package version, and screenshot or exported values in a private review record. This document does not claim access to them.
 2. Compare each selected data category and permission explanation with the table above, `manifest.json`, the final ZIP, `PRIVACY.md`, and the live policy URL. Resolve disagreements before certification.
-3. Confirm the live Privacy Policy at `https://cedarred123.github.io/open-campus/privacy/` reflects the candidate; the draft branch alone does not update the public page.
+3. Confirm the live Privacy Policy at `https://cedarred123.github.io/courselark/privacy/` reflects the candidate; the draft branch alone does not update the public page.
 4. Confirm the listing's optional AI, browser speech, custom images, calendar transfers, free/no-paywall claims, and independent branding match the uploaded build.
 
 The under-13 K–12 audience and source/asset rights still require their separate release decisions. A checked dashboard form would not resolve either one.

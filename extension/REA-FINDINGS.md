@@ -54,4 +54,4 @@ The operator reports that CourseLark uses original application code and assets a
 
 Nine Node integration tests cover paginated courses/assignments, permission revocation and registration, untrusted pagination, import preservation, account separation, privileged messages, connected-tab selection and reminder deduplication. Browser integration tests use synthetic Canvas HTML and mocked extension storage; they check injected styles/cards/grades/notes, safe previews, dynamic mounting, stale-style cleanup, workspace opening, disconnected-page restoration and absence of decoration on unconnected sites.
 
-See `tests/integration.test.js` and `tests/browser-integration.mjs`. Browser tests need Playwright; set `OPEN_CAMPUS_PLAYWRIGHT` to its `index.mjs` when it is not installed beside the project. These checks do not establish complete production parity.
+See `tests/integration.test.js` and `tests/browser-integration.mjs`. Browser tests need Playwright; set `COURSELARK_PLAYWRIGHT` to its `index.mjs` when it is not installed beside the project. These checks do not establish complete production parity.
