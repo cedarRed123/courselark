@@ -24,7 +24,7 @@
 | Grade trends | Local score snapshots with bar chart | Implemented; no historical server data |
 | Notes by class/task | Class notebooks, task notes, dashboard excerpts | Implemented, persistence tested |
 | Notes/files uploads | Text/MD/CSV/JSON, searchable PDF, DOCX, PPTX text extraction | Implemented; scanned-document OCR and full slide visuals are not included |
-| PDF annotation | Pen colors/sizes, page ink stored locally, annotated-page PNG export | Implemented; full annotated-PDF export not included |
+| PDF annotation | Pen colors/sizes, page ink stored locally, annotated-page PNG export | Implemented; annotated page PNG and whole-document annotated PDF export (pages flattened to images, so text is not selectable) |
 | Audio notes/history | Local microphone recording, playback, separate audio exports | Implemented; real microphone/device behavior unverified |
 | Live transcription | Browser speech recognition when supported | Optional; vendor service may be used, support varies |
 | Offline transcription | Local ffmpeg → whisper.cpp adapter | Engine/model required; real transcription unverified |
