@@ -1,5 +1,5 @@
 export const uid = () => crypto.randomUUID();
-export const legalVersion = '2026-10-21.2';
+export const legalVersion = '2026-10-21.3';
 export const dayKey = (date = new Date()) => {const d=new Date(date);return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;};
 export const themes = [
  {id:'sage',name:'Quiet campus',bg:'#f4f6f1',surface:'#ffffff',text:'#253831',accent:'#4c7663',palette:['#86a98d','#d6bc86','#a0b5d3','#bd9dba'],font:'system-ui',dark:false},
@@ -8,7 +8,7 @@ export const themes = [
  {id:'ocean',name:'Ocean blue',bg:'#edf5fa',surface:'#ffffff',text:'#233d52',accent:'#397d9e',palette:['#70a6bb','#8cbfae','#caa585','#9c9cc9'],font:'system-ui',dark:false},
  {id:'ember',name:'Evening ember',bg:'#211c1a',surface:'#312925',text:'#f6e7d9',accent:'#e2a376',palette:['#ae7665','#b3986b','#768b72','#8b829a'],font:'Georgia',dark:true}
 ];
-export const initial = () => ({schema:1,legalAcceptance:null,tasks:[],courses:[],notes:[],sets:[],themes:[],themeHistory:[],activity:[],scores:{},settings:{theme:themes[0],mode:'light',darkStart:'19:00',darkEnd:'07:00',showGpa:true,showTodo:true,showNotes:true,showAssignments:true,assignmentPreview:true,fullWidth:false,disableOverlay:false,showCompanion:true,showQuote:true,assignmentCount:3,rotate:false,compact:false,gradient:true,hideLogo:false,hideFeedback:false,showGrades:true,cardLinks:true,font:'system-ui',reminders:false,reminderMinutes:60,focusMinutes:25,breakMinutes:5,breathSeconds:60,quote:'Small steps are still progress.',playlist:'',model:'qwen3:4b',lmsOrigins:[],cardOverrides:{},gpaScale:'whole',gpaTermKey:'auto',priorGpa:0,priorCredits:0,gpaHistory:[]}});
+export const initial = () => ({schema:1,legalAcceptance:null,tasks:[],courses:[],notes:[],sets:[],themes:[],themeHistory:[],activity:[],scores:{},settings:{theme:themes[0],mode:'light',darkStart:'19:00',darkEnd:'07:00',showGpa:true,showTodo:true,showNotes:true,showAssignments:true,assignmentPreview:true,fullWidth:false,disableOverlay:false,showCompanion:true,showQuote:true,showAnnouncements:true,assignmentCount:3,rotate:false,compact:false,gradient:true,hideLogo:false,hideFeedback:false,showGrades:true,cardLinks:true,font:'system-ui',reminders:false,reminderMinutes:60,focusMinutes:25,breakMinutes:5,breathSeconds:60,quote:'Small steps are still progress.',playlist:'',model:'qwen3:4b',lmsOrigins:[],cardOverrides:{},gpaScale:'whole',gpaTermKey:'auto',priorGpa:0,priorCredits:0,gpaHistory:[]}});
 export function mergeImport(state, incoming) {
  if (!incoming || incoming.schema!==1) throw Error('Unsupported backup format.');
  for (const key of ['tasks','courses','notes','sets','themes','themeHistory','activity']) if(!Array.isArray(incoming[key])) throw Error(`Invalid ${key}.`);
@@ -192,6 +192,7 @@ export function calendarLink(task,provider='google') {
 }
 export function safeURL(value){try{const u=new URL(value);return ['https:','http:'].includes(u.protocol)?u.href:'';}catch{return '';}}
 export function mergeLMS(state,payload){
+ if(Array.isArray(payload.announcements)){const mine=a=>a.sourceOrigin===payload.origin&&String(a.userId)===String(payload.userId);state.announcements=[...(state.announcements||[]).filter(a=>!mine(a)),...payload.announcements].sort((a,b)=>(Date.parse(b.posted)||0)-(Date.parse(a.posted)||0)).slice(0,200);}
  const courses=new Map(state.courses.map(c=>[c.id,c]));for(const c of payload.courses){const old=courses.get(c.id);courses.set(c.id,{credits:3,goal:90,...old,...c,credits:old?.credits??c.credits??3,creditsAssumed:old?.credits!==undefined?old.creditsAssumed===true:c.credits===undefined,gpaExclude:old?.gpaExclude??false,manualGrade:old?.manualGrade,manualLetter:old?.manualLetter,goal:old?.goal??90,history:[...(old?.history||[]),...(c.grade!=null&&old?.grade!==c.grade?[{day:dayKey(),grade:c.grade}]:[])]});}state.courses=[...courses.values()];
  const tasks=new Map(state.tasks.map(t=>[t.id,t]));for(const t of payload.tasks){const old=tasks.get(t.id),newlySubmitted=t.submitted===true&&old?.submitted!==true,legacyOverride=old?.source==='canvas'&&old.done===true&&old.submitted===false?true:undefined,localDoneOverride=newlySubmitted?undefined:old?.localDoneOverride??legacyOverride,done=newlySubmitted?true:localDoneOverride??(old?.source==='canvas'||t.source==='canvas'?t.done??old?.done??false:old?.done??t.done??false);tasks.set(t.id,{...old,...t,done,localDoneOverride,subtasks:old?.subtasks||[],workStart:old?.workStart||'',workEnd:old?.workEnd||'',notes:old?.notes||''});}state.tasks=[...tasks.values()];return state;
 }

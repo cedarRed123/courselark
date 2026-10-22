@@ -1,6 +1,7 @@
 import {read, write} from './store.js';
 import {mergeLMS, gpaSummary, legalVersion} from './core.js';
 import {syncCalendars} from './calendar-sync.js';
+import {syncPayload, applyPayload, pushSync, pullSync} from './device-sync.js';
 
 const own = sender => sender.id === chrome.runtime.id && sender.url?.startsWith(chrome.runtime.getURL(''));
 let registrationQueue = Promise.resolve();
@@ -38,6 +39,24 @@ chrome.runtime.onInstalled.addListener(() => initialize().catch(console.error));
 chrome.runtime.onStartup.addListener(() => initialize().catch(console.error));
 chrome.permissions.onAdded.addListener(() => registerSites().catch(console.error));
 chrome.permissions.onRemoved.addListener(() => registerSites().catch(console.error));
+let pushTimer;
+export async function pullRemote() {
+  const state = await read();
+  if (!state.settings.syncAcrossDevices) return false;
+  const payload = await pullSync();
+  if (!payload) return false;
+  await write(applyPayload(state, payload));
+  return true;
+}
+chrome.storage.onChanged.addListener((changes, area) => {
+  if (area === 'sync' && changes['cl-sync-meta']) pullRemote().catch(console.error);
+  const next = area === 'local' && changes.campus?.newValue, prev = changes.campus?.oldValue;
+  if (next?.settings?.syncAcrossDevices) {
+    // Turning sync on adopts another device's copy first; later local edits are pushed.
+    if (!prev?.settings?.syncAcrossDevices) pullRemote().then(pulled => pulled || pushSync(next)).catch(console.error);
+    else if (JSON.stringify(syncPayload(prev)) !== JSON.stringify(syncPayload(next))) { clearTimeout(pushTimer); pushTimer = setTimeout(() => read().then(pushSync).catch(console.error), 2000); }
+  }
+});
 chrome.storage.onChanged.addListener((changes, area) => {
   if (area === 'local' && changes.campus && (JSON.stringify(changes.campus.oldValue?.settings?.lmsOrigins) !== JSON.stringify(changes.campus.newValue?.settings?.lmsOrigins) || changes.campus.oldValue?.legalAcceptance?.version !== changes.campus.newValue?.legalAcceptance?.version)) registerSites().catch(console.error);
 });
@@ -159,6 +178,7 @@ export async function collectLMS() {
     const score = value => (typeof value==='number'||typeof value==='string') && String(value).trim() && Number.isFinite(Number(value)) ? Number(value) : null;
     const date = value => value && Number.isFinite(Date.parse(value)) ? new Date(value).toISOString() : null;
     const letter = value => typeof value==='string' && value.trim() ? value.trim() : null;
+    const active = [], announcements = [];
     for (const c of list) {
       if (!/^\d+$/.test(String(c.id))) continue;
       const courseId = prefix + 'course:' + c.id;
@@ -189,6 +209,7 @@ export async function collectLMS() {
       const effectiveEnd = date(c.restrict_enrollments_to_course_dates?c.end_at||c.term?.end_at:c.term?.end_at||c.end_at);
       const effectiveStart = date(c.restrict_enrollments_to_course_dates?c.start_at||c.term?.start_at:c.term?.start_at||c.start_at);
       if (concluded || c.access_restricted_by_date || (effectiveEnd&&Date.parse(effectiveEnd)<=Date.now()) || (effectiveStart&&Date.parse(effectiveStart)>Date.now())) continue;
+      active.push(c);
       try {
         const assignments = await get(`/api/v1/courses/${c.id}/assignments?include[]=submission&per_page=100`);
         for (const a of assignments) {
@@ -202,7 +223,23 @@ export async function collectLMS() {
         }
       } catch (e) { warnings.push(`${c.name || c.course_code || c.id}: ${e.message}`); }
     }
-    return {origin, userId: String(profile.id), courses, tasks, warnings};
+    // Recent announcements (last 21 days) as plain text for the dashboard preview.
+    const text = html => String(html || '').replace(/<(script|style)[\s\S]*?<\/\1>/gi, ' ').replace(/<[^>]*>/g, ' ').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/\s+/g, ' ').trim();
+    const since = new Date(Date.now() - 21 * 86400000).toISOString();
+    for (let i = 0; i < active.length; i += 10) {
+      const chunk = active.slice(i, i + 10), query = new URLSearchParams({start_date: since, per_page: '50'});
+      for (const c of chunk) query.append('context_codes[]', 'course_' + c.id);
+      try {
+        for (const a of await get('/api/v1/announcements?' + query)) {
+          const course = chunk.find(c => 'course_' + c.id === a.context_code);
+          if (!course || !/^\d+$/.test(String(a.id))) continue;
+          let url = origin + '/courses/' + course.id + '/discussion_topics/' + a.id;
+          try { const u = new URL(a.html_url || url, origin); if (u.origin === origin) url = u.href; } catch {}
+          announcements.push({id: prefix + 'announcement:' + a.id, courseId: prefix + 'course:' + course.id, userId: String(profile.id), sourceOrigin: origin, title: String(a.title || 'Announcement').slice(0, 300), message: text(a.message).slice(0, 2000), posted: date(a.posted_at), url});
+        }
+      } catch (e) { warnings.push(`Announcements: ${e.message}`); }
+    }
+    return {origin, userId: String(profile.id), courses, tasks, announcements, warnings};
   } catch (e) { return {error: e.message}; }
 }
 export async function checkReminders(now = Date.now()) {

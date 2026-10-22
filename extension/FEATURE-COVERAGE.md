@@ -13,7 +13,7 @@
 | Fonts, gradients, density/sidebar controls | Five installed font families; gradients, compact cards, hide logo/feedback, show links/grades | Google Fonts families, layered gradients/HTTPS sidebar images and user custom CSS implemented; tab icons not implemented |
 | Course customization | Colors/images/names/codes/visibility/custom links; existing Canvas images preserved unless overridden | Implemented; fixture verifies injection/restoration |
 | Assignment list/deadlines | Canvas paginated same-origin API import, search/filter, completion; inline Canvas right sidebar with timeframe, groups, progress and local add task | Implemented and synthetic integration tested; one-time site enable, then automatic refresh on each visit (30-minute throttle) |
-| Dashboard assignment preview | Text-only descriptions in workspace and injected Canvas cards | Implemented; dashboard announcement preview not implemented |
+| Dashboard assignment preview | Text-only descriptions in workspace and injected Canvas cards | Implemented; recent Canvas announcements (21 days, plain text) preview on the workspace dashboard |
 | Subtasks, notes, work times | Per-task local controls, agenda grouping | Implemented, persistence tested |
 | Todo progress visuals | In-page progress ring, grouped cards, completed tab, course colors and task count | Implemented in fixture; original browser installation was unavailable for live post-change visual verification |
 | Assignment reminders | Browser alarms, deduplicated notifications, configurable lead | Implemented with mock extension tests; OS notification behavior unverified |
@@ -38,7 +38,7 @@
 | High scores | Stored per set/game | Implemented locally |
 | Companion/streaks/levels | Original Sprout character with XP and daily activity streak | Implemented locally; not Campy artwork/animations |
 | Friends/community/public materials | No remote social backend | Not implemented |
-| Cross-device account sync | JSON backups and separate attachments | Accounts/cloud synchronization not implemented |
+| Cross-device account sync | JSON backups and separate attachments | Settings, appearance, custom CSS and themes sync through the browser's own account sync (opt-in, no CourseLark server); tasks/notes/grades stay per device; no CourseLark accounts |
 | Custom playlists | User-supplied provider URL | Implemented link; no in-app playback/provider account integration |
 | Custom focus/break timers | Deadline-based local timer, pause/reset, notifications | Implemented; browser/workspace must remain open |
 | Breathing breaks | Adjustable duration, inhale/exhale animation | Implemented |
