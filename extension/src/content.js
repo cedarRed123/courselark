@@ -1,6 +1,6 @@
 /* CourseLark: original, account-aware dashboard decoration. */
 (async () => {
-  const legalVersion = '2026-10-21.1';
+  const legalVersion = '2026-10-21.2';
   if (globalThis.__openCampusInjected) return;
   globalThis.__openCampusInjected = true;
   let state = (await chrome.storage.local.get('campus')).campus;

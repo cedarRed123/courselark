@@ -1,5 +1,6 @@
 import {read, write} from './store.js';
 import {mergeLMS, gpaSummary, legalVersion} from './core.js';
+import {syncCalendars} from './calendar-sync.js';
 
 const own = sender => sender.id === chrome.runtime.id && sender.url?.startsWith(chrome.runtime.getURL(''));
 let registrationQueue = Promise.resolve();
@@ -31,6 +32,7 @@ async function initialize() {
   if (!(await chrome.storage.local.get('campus')).campus) await write(await read());
   await registerSites();
   if (!(await chrome.alarms.get('reminders'))) await chrome.alarms.create('reminders', {periodInMinutes: 1});
+  if (!(await chrome.alarms.get('calendar-sync'))) await chrome.alarms.create('calendar-sync', {periodInMinutes: 5});
 }
 chrome.runtime.onInstalled.addListener(() => initialize().catch(console.error));
 chrome.runtime.onStartup.addListener(() => initialize().catch(console.error));
@@ -74,6 +76,7 @@ export async function handleMessage(message, sender) {
   }
   if (!own(sender)) throw Error('This action is available only from the CourseLark extension.');
   if (message.type === 'REGISTER') return {ok: true, connected: await registerSites()};
+  if (message.type === 'CALENDAR_SYNC') return {ok: true, results: await calendarSync()};
   if (message.type !== 'IMPORT_LMS') throw Error('Unknown operation.');
   const state = await read();
   if(state.legalAcceptance?.version!==legalVersion)throw Error('Review and accept the Terms of Use before importing LMS data.');
@@ -221,4 +224,7 @@ export async function checkReminders(now = Date.now()) {
     await chrome.storage.local.set({reminderLedger: ledger});
   } finally { alarmRunning = false; }
 }
-chrome.alarms.onAlarm.addListener(alarm => { if (alarm.name === 'reminders') checkReminders().catch(console.error); });
+let calendarRun = null;
+// One sync at a time; overlapping alarms and Sync now share the running pass.
+function calendarSync() { return calendarRun ||= read().then(state => syncCalendars(state.tasks)).finally(() => { calendarRun = null; }); }
+chrome.alarms.onAlarm.addListener(alarm => { if (alarm.name === 'reminders') checkReminders().catch(console.error); if (alarm.name === 'calendar-sync') calendarSync().catch(console.error); });
