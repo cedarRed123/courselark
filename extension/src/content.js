@@ -174,7 +174,7 @@
   function apply() {
     const connected = state?.legalAcceptance?.version === legalVersion && state?.settings?.lmsOrigins?.includes(location.origin);
     if (!connected) {
-      observer?.disconnect();document.querySelector('#open-campus-font')?.remove(); style.remove(); widgetStyle.remove(); launch.remove();document.querySelector('#open-campus-nav-item')?.remove();
+      observer?.disconnect();tabIcon('');document.querySelector('#open-campus-font')?.remove(); style.remove(); widgetStyle.remove(); launch.remove();document.querySelector('#open-campus-nav-item')?.remove();
       for (const card of document.querySelectorAll('.ic-DashboardCard')) restoreCard(card);
       document.querySelector('#open-campus-preview')?.remove();
       document.querySelector('#open-campus-gpa')?.remove();document.querySelector('#open-campus-todo')?.remove();document.querySelector('#open-campus-gpa-dialog')?.remove();document.querySelector('#open-campus-task-dialog')?.remove();document.querySelector('#open-campus-panel')?.remove();
@@ -192,6 +192,7 @@
     const font = applyFont(document,s.font);
     const sheet = `#header.ic-app-header{background:${safeBackground(theme.sidebar)||surface}!important}#header .ic-app-header__menu-list-link{color:${color(theme.sidebarText,text)}!important}${s.disableOverlay?'.ic-DashboardCard__header_hero{opacity:0!important}':''}${s.fullWidth?'#dashboard{max-width:none!important}.ic-DashboardCard__box{max-width:none!important}':''}#dashboard{--oc-surface:${surface};--oc-text:${text};--oc-accent:${accent};--oc-bg:${bg};font-family:${font};background:${bg};color:${text}}#open-campus-gpa,#open-campus-todo{background:${surface};color:${text}}.ic-DashboardCard{background:${surface}!important;color:${text}!important;border-radius:14px!important;box-shadow:0 2px 9px #172c2530!important;overflow:hidden}.ic-DashboardCard__header_content,.ic-DashboardCard__action-container{background:${surface}!important}.ic-DashboardCard__header-title{color:${accent}!important}.ic-DashboardCard__header-subtitle,.ic-DashboardCard__header-term{color:${text}!important}${s.hideLogo ? '#header .ic-app-header__logomark-container{display:none!important}' : ''}${s.hideFeedback ? '.recent_feedback{display:none!important}' : ''}${s.compact ? '.ic-DashboardCard{width:220px!important}.ic-DashboardCard__header_image{height:85px!important}' : ''}${s.cardLinks ? '' : '.ic-DashboardCard__action-container{display:none!important}'}#dashboard .ic-DashboardCard__header_image{position:relative}.open-campus-grade{position:absolute;top:15px;left:15px;z-index:4;background:#fff;color:#263b33;padding:5px 10px;border-radius:24px;font:700 14px system-ui;box-shadow:0 2px 6px #0002}.open-campus-card-extra{padding:12px 18px 16px;border-top:1px solid #80938d33;font:13px/1.5 ${font};min-height:48px}.open-campus-card-extra h3{font:700 15px ${font};margin:0 0 8px}.open-campus-card-extra a{display:flex;justify-content:space-between;gap:9px;margin:9px 0;color:${text};text-decoration:none}.open-campus-card-extra a:hover{text-decoration:underline}.open-campus-card-extra button{font:inherit;cursor:pointer}.open-campus-note{white-space:pre-wrap;padding:0 18px;font-size:12px}`;
     // User-authored CSS goes last; textContent keeps it inside the style element.
+    tabIcon(s.tabIcon);
     const custom = typeof s.customCSS === 'string' ? '\n' + s.customCSS.slice(0, 20000) : '';
     if (style.textContent !== sheet + custom) style.textContent = sheet + custom;
     const palette = Array.isArray(theme.palette) && theme.palette.length ? theme.palette.map(c => color(c, accent)) : [accent];
@@ -252,6 +253,22 @@
     if (title && original.title !== undefined) title.textContent = original.title;
     if (subtitle && original.subtitle !== undefined) subtitle.textContent = original.subtitle;
     card.querySelectorAll('.open-campus-grade,.open-campus-note,.open-campus-card-extra').forEach(n => n.remove());
+  }
+  // Custom browser-tab icon: a short emoji/text or an HTTPS image; the page's own icons come back when cleared.
+  let hiddenIcons = [];
+  function tabIcon(value) {
+    const text = typeof value === 'string' ? value.trim() : '';
+    let href = '';
+    if (/^https:\/\//.test(text)) { try { href = new URL(text).href; } catch {} }
+    else if (text && [...text].length <= 2) href = 'data:image/svg+xml,' + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><text x="50%" y="54%" font-size="52" text-anchor="middle" dominant-baseline="middle">${text.replace(/[<>&"]/g, '')}</text></svg>`);
+    let link = document.querySelector('#open-campus-tab-icon');
+    if (!href) { link?.remove(); for (const icon of hiddenIcons) icon.rel = icon.dataset.ocRel; hiddenIcons = []; return; }
+    if (!link) {
+      hiddenIcons = [...document.querySelectorAll('link[rel~="icon"]')];
+      for (const icon of hiddenIcons) { icon.dataset.ocRel = icon.rel; icon.rel = 'open-campus-hidden-icon'; }
+      link = document.createElement('link'); link.id = 'open-campus-tab-icon'; link.rel = 'icon'; document.head.append(link);
+    }
+    if (link.href !== href) link.href = href;
   }
   let timer, observer;
   function safeApply() {

@@ -101,6 +101,10 @@ try {
   await page.waitForFunction(()=>getComputedStyle(document.querySelector('.ic-DashboardCard')).outlineColor==='rgb(1, 2, 3)');
   assert.equal(await page.evaluate(()=>window.__pwned),undefined);
   await page.evaluate(()=>{const settings=structuredClone(window.__campus.settings);settings.customCSS='';window.__updateCampus({settings});});
+  await page.evaluate(()=>{const settings=structuredClone(window.__campus.settings);settings.tabIcon='📚';window.__updateCampus({settings});});
+  await page.waitForFunction(()=>document.querySelector('#open-campus-tab-icon')?.href.startsWith('data:image/svg+xml')&&!document.querySelector('link[rel="icon"]:not(#open-campus-tab-icon)'));
+  await page.evaluate(()=>{const settings=structuredClone(window.__campus.settings);settings.tabIcon='javascript:alert(1)<script>';window.__updateCampus({settings});});
+  await page.waitForFunction(()=>!document.querySelector('#open-campus-tab-icon'));
   await page.waitForFunction(()=>getComputedStyle(document.querySelector('.ic-DashboardCard')).outlineColor!=='rgb(1, 2, 3)');
   assert.equal(await page.locator('.open-campus-card-extra button').count(),0);
   // Disconnect restores original host styles and removes all injected data.
