@@ -38,6 +38,17 @@ with zipfile.ZipFile(archive, 'w', compression=zipfile.ZIP_DEFLATED) as z:
         z.writestr(info, data)
 checksum = archive.with_suffix('.zip.sha256')
 checksum.write_text(f'{hashlib.sha256(archive.read_bytes()).hexdigest()}  {archive.name}\n')
+# Firefox build: same files, MV3 background scripts instead of a service worker, plus a Gecko ID.
+firefox = dict(manifest, background={'scripts': [manifest['background']['service_worker']], 'type': 'module'},
+               browser_specific_settings={'gecko': {'id': 'courselark@cedarred123.github.io', 'strict_min_version': '128.0', 'data_collection_permissions': {'required': ['none']}}})
+fx_archive = out / f'courselark-firefox-{version}.zip'
+with zipfile.ZipFile(fx_archive, 'w', compression=zipfile.ZIP_DEFLATED) as z:
+    for name, data in sorted({**entries, 'manifest.json': (json.dumps(firefox, indent=2) + '\n').encode()}.items()):
+        info = zipfile.ZipInfo(name, (2020, 1, 1, 0, 0, 0))
+        info.compress_type = zipfile.ZIP_DEFLATED
+        info.external_attr = 0o100644 << 16
+        z.writestr(info, data)
+fx_archive.with_suffix('.zip.sha256').write_text(f'{hashlib.sha256(fx_archive.read_bytes()).hexdigest()}  {fx_archive.name}\n')
 print(version)
 if os.environ.get('GITHUB_OUTPUT'):
     with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
