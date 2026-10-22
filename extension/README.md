@@ -8,8 +8,8 @@ A free, open-source Chrome/Edge MV3 campus companion. Implemented features have 
 2. Open `brave://extensions`, `chrome://extensions`, or `edge://extensions` and enable **Developer mode**.
 3. Choose **Load unpacked**, then select the extracted folder containing `manifest.json`.
 4. Pin CourseLark, then open your school's signed-in Canvas tab.
-5. Click the extension → **Enable on this site** and grant access to that exact site. CourseLark imports right away.
-6. Later visits to that site import automatically, at most every 30 minutes. Imports are read-only.
+5. Accept the Terms in the popup and allow school-site access when Chrome asks.
+6. Open your school's LMS while signed in. CourseLark recognizes it, connects it and imports automatically, then refreshes on later visits at most every 30 minutes. Imports are read-only. Turn a site off in Settings.
 7. Click **✦ CourseLark** in Canvas navigation, or the extension icon → **Open dashboard**, to open the workspace in a panel over Canvas.
 
 If an older unpacked CourseLark is already loaded from this folder, use **Reload** on its extension card, then reload the Canvas tab. Click **✦ CourseLark** in Canvas navigation to open a large panel within that tab. The panel closes with its × button or Escape. **Open grade planner** in the GPA widget opens directly to Grades & GPA in the same panel. The Canvas dashboard also places GPA above course cards and a week-based to-do list in the right sidebar. The GPA settings let you choose whole-letter or plus/minus grading, term, course credits, exclusions, prior GPA, and a term goal. Imported assignment completion changes only local CourseLark tracking; it never submits Canvas work.

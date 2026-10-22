@@ -263,3 +263,19 @@ test('Blackboard import reads memberships, gradebook columns, user grades and th
   assert.equal(result.courses.length, 1); assert.equal(result.courses[0].grade, 90);
   assert.equal(result.tasks.length, 1); assert.equal(result.tasks[0].score, 8); assert.equal(result.tasks[0].done, true);
 });
+
+test('one-time school-site access auto-connects LMS tabs, registers one broad script, and respects turned-off sites', async () => {
+  reset(); stored.campus.settings.lmsOrigins = []; granted.add('https://*/*');
+  const tab = {id: 5, url: 'https://canvas.school.edu/'}, sender = {id: 'test-extension', url: tab.url, tab, frameId: 0};
+  assert.equal((await background.handleMessage({type: 'AUTO_CONNECT'}, sender)).origin, 'https://canvas.school.edu');
+  assert.deepEqual(stored.campus.settings.lmsOrigins, ['https://canvas.school.edu']);
+  assert.equal(await background.registerSites(), 1);
+  assert.deepEqual(registrations.find(r => r.id === 'campus-sites').matches, ['https://*/*']);
+  await assert.rejects(background.handleMessage({type: 'AUTO_CONNECT'}, {...sender, frameId: 2}), /LMS tabs/);
+  stored.campus.settings.excludedOrigins = ['https://moodle.school.edu'];
+  await assert.rejects(background.handleMessage({type: 'AUTO_CONNECT'}, {...sender, url: 'https://moodle.school.edu/', tab: {id: 6, url: 'https://moodle.school.edu/'}}), /turned off/);
+  granted.delete('https://*/*');
+  await assert.rejects(background.handleMessage({type: 'AUTO_CONNECT'}, {...sender, url: 'https://lms.other.edu/', tab: {id: 7, url: 'https://lms.other.edu/'}}), /School-site access/);
+  stored.campus.legalAcceptance = null; granted.add('https://*/*');
+  await assert.rejects(background.handleMessage({type: 'AUTO_CONNECT'}, sender), /School-site access/);
+});

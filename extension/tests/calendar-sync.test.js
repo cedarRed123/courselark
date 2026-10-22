@@ -29,38 +29,16 @@ test('events exclude private notes, completed work and unscheduled tasks', () =>
   assert.equal(events[0].end, '2026-10-30T17:30:00.000Z');
 });
 
-test('Google sync creates one calendar, upserts changed events only and deletes finished ones', async () => {
-  stored = {calendarSync: {google: {connected: true, token: 'g', expires: later}}};
-  const {calls, request} = server((url, o) => url.endsWith('/calendars') ? [200, {id: 'cal1'}] : o.method === 'POST' ? [200, {id: 'evt1'}] : [200, {}]);
-  assert.equal((await syncCalendars([task], {request})).google.ok, true);
-  assert.deepEqual(calls.map(c => c.method), ['POST', 'POST']);
-  assert.ok(calls.every(c => c.headers.Authorization === 'Bearer g' && new URL(c.url).origin === 'https://www.googleapis.com'));
-  assert.ok(!calls[1].body.includes('private thoughts'));
-  calls.length = 0; await syncCalendars([task], {request}); assert.equal(calls.length, 0);
-  await syncCalendars([{...task, title: 'Lab report v2'}], {request});
-  assert.equal(calls[0].method, 'PUT'); assert.match(calls[0].url, /events\/evt1$/);
-  calls.length = 0; await syncCalendars([{...task, done: true}], {request});
-  assert.equal(calls[0].method, 'DELETE');
-  assert.deepEqual((await readSync()).google.events, {});
-});
-
-test('a provider event deleted remotely is recreated, and errors are recorded without stopping other providers', async () => {
-  stored = {calendarSync: {google: {connected: true, token: 'g', expires: later, calendarId: 'cal1', events: {[task.id]: {id: 'gone', hash: 'old'}}}, microsoft: {connected: true, token: 'm', expires: later}}};
-  const {calls, request} = server((url, o) => url.includes('graph.microsoft.com') ? [500, {}] : o.method === 'PUT' ? [404, {}] : [200, {id: 'evt2'}]);
+test('iCloud updates changed events in place, deletes finished ones, and ignores old OAuth provider entries', async () => {
+  stored = {calendarSync: {google: {connected: true, token: 'old'}, apple: {connected: true, user: 'a', password: 'b', calendarUrl: 'https://p1-caldav.icloud.com/1/calendars/courselark/'}}};
+  const {calls, request} = server(() => [201, '']);
   const result = await syncCalendars([task], {request});
-  assert.equal(result.google.ok, true); assert.equal((await readSync()).google.events[task.id].id, 'evt2');
-  assert.equal(result.microsoft.ok, false); assert.match((await readSync()).microsoft.error, /Outlook Calendar returned 500/);
-  assert.ok(calls.some(c => c.method === 'PUT') && calls.some(c => c.method === 'POST'));
-});
-
-test('Outlook sync refreshes expired tokens with the stored refresh token', async () => {
-  stored = {calendarSync: {microsoft: {connected: true, token: 'old', refresh: 'r1', expires: 0, calendarId: 'mc'}}};
-  const {calls, request} = server(url => url.endsWith('/token') ? [200, {access_token: 'new', refresh_token: 'r2', expires_in: 3600}] : [200, {id: 'm1'}]);
-  assert.equal((await syncCalendars([task], {request})).microsoft.ok, true);
-  assert.match(calls[0].body.toString(), /grant_type=refresh_token/);
-  assert.equal(calls[1].headers.Authorization, 'Bearer new');
-  assert.match(calls[1].body, /"timeZone":"UTC"/);
-  assert.equal((await readSync()).microsoft.refresh, 'r2');
+  assert.deepEqual(Object.keys(result), ['apple']);
+  assert.deepEqual(calls.map(c => c.method), ['PUT']); assert.ok(calls.every(c => new URL(c.url).hostname.endsWith('.icloud.com')));
+  calls.length = 0; await syncCalendars([task], {request}); assert.equal(calls.length, 0);
+  await syncCalendars([{...task, title: 'Lab report v2'}], {request}); assert.equal(calls[0].method, 'PUT');
+  calls.length = 0; await syncCalendars([{...task, done: true}], {request}); assert.equal(calls[0].method, 'DELETE');
+  assert.deepEqual((await readSync()).apple.events, {});
 });
 
 test('iCloud discovery stays on iCloud, creates the CourseLark calendar and PUTs iCalendar data', async () => {
@@ -88,8 +66,8 @@ test('iCloud refuses a calendar home outside iCloud and reports bad passwords', 
 });
 
 test('disconnecting during a sync is not undone by the finishing pass', async () => {
-  stored = {calendarSync: {google: {connected: true, token: 'g', expires: later, calendarId: 'c'}}};
-  const {request} = server(() => { delete stored.calendarSync.google; return [200, {id: 'e'}]; });
+  stored = {calendarSync: {apple: {connected: true, user: 'a', password: 'b', calendarUrl: 'https://p1-caldav.icloud.com/1/calendars/courselark/'}}};
+  const {request} = server(() => { delete stored.calendarSync.apple; return [201, '']; });
   await syncCalendars([task], {request});
-  assert.equal((await readSync()).google, undefined);
+  assert.equal((await readSync()).apple, undefined);
 });

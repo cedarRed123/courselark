@@ -7,6 +7,7 @@ const own = sender => sender.id === chrome.runtime.id && sender.url?.startsWith(
 let registrationQueue = Promise.resolve();
 let alarmRunning = false;
 const autoSyncMinutes = 30;
+export const schoolSites = 'https://*/*';
 
 export function normalizeSite(value) {
   const url = new URL(value);
@@ -21,6 +22,8 @@ export function registerSites() {
     const origins = state.legalAcceptance?.version===legalVersion ? [...new Set((state.settings.lmsOrigins || []).map(normalizeSite))] : [];
     const allowed = [];
     for (const origin of origins) if (await chrome.permissions.contains({origins: [origin + '/*']})) allowed.push(origin + '/*');
+    // One-time school-site access: the content script checks each page for LMS markers and exits on everything else.
+    if (state.legalAcceptance?.version===legalVersion && await chrome.permissions.contains({origins: [schoolSites]})) allowed.splice(0, allowed.length, schoolSites);
     const existing = await chrome.scripting.getRegisteredContentScripts({ids: ['campus-sites']});
     if (existing.length) await chrome.scripting.unregisterContentScripts({ids: ['campus-sites']});
     if (allowed.length) await chrome.scripting.registerContentScripts([{id: 'campus-sites', matches: allowed, js: ['src/content.js'], runAt: 'document_idle', persistAcrossSessions: true}]);
@@ -85,6 +88,15 @@ export async function handleMessage(message, sender) {
     const response=await chrome.tabs.sendMessage(tab.id,{type:'OPEN_PANEL',page:message.page||'dashboard'});
     if(!response?.ok)throw Error('Reload this Canvas tab, then try opening CourseLark again.');
     return {ok:true};
+  }
+  if (message.type === 'AUTO_CONNECT') {
+    // Only top-level pages, only with the one-time school-site access, never for sites the user turned off.
+    if (sender.id !== chrome.runtime.id || sender.frameId || !sender.tab?.url || !sender.url || new URL(sender.tab.url).origin !== new URL(sender.url).origin) throw Error('Automatic connection is available only on LMS tabs.');
+    const origin = normalizeSite(new URL(sender.url).origin), state = await read();
+    if (state.legalAcceptance?.version !== legalVersion || !(await chrome.permissions.contains({origins: [schoolSites]}))) throw Error('School-site access is not enabled.');
+    if ((state.settings.excludedOrigins || []).includes(origin)) throw Error('CourseLark is turned off for this site.');
+    if (!state.settings.lmsOrigins.includes(origin)) { state.settings.lmsOrigins.push(origin); await write(state); }
+    return {ok: true, origin};
   }
   if (message.type === 'AUTO_SYNC') {
     // Connected top-level LMS tabs refresh their own import; repeat visits are throttled.

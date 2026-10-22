@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "__MSG_extName__",
-  "version": "0.10.0",
+  "version": "0.11.0",
   "description": "__MSG_extDescription__",
   "permissions": [
     "storage",
@@ -9,8 +9,7 @@
     "activeTab",
     "scripting",
     "alarms",
-    "notifications",
-    "identity"
+    "notifications"
   ],
   "optional_host_permissions": [
     "https://*/*",
@@ -39,9 +38,7 @@
         "src/vendor/standard_fonts/*",
         "src/theme-compat.js",
         "src/theme-runtime.js",
-        "src/calendar-sync.js",
-        "src/calendar-config.js",
-        "src/classroom.js"
+        "src/calendar-sync.js"
       ],
       "matches": [
         "https://*/*",
@@ -54,7 +51,7 @@
     "128": "icons/icon.png"
   },
   "content_security_policy": {
-    "extension_pages": "script-src 'self'; object-src 'self'; connect-src 'self' https://classroom.googleapis.com https://www.googleapis.com https://graph.microsoft.com https://login.microsoftonline.com https://caldav.icloud.com https://*.icloud.com https://api.bettercampus.com http://localhost:11434 http://127.0.0.1:11434 http://127.0.0.1:4317 http://localhost:4317; img-src 'self' data: https:; media-src 'self' blob:; worker-src 'self';"
+    "extension_pages": "script-src 'self'; object-src 'self'; connect-src 'self' https://caldav.icloud.com https://*.icloud.com https://api.bettercampus.com http://localhost:11434 http://127.0.0.1:11434 http://127.0.0.1:4317 http://localhost:4317; img-src 'self' data: https:; media-src 'self' blob:; worker-src 'self';"
   },
   "default_locale": "en"
 }
