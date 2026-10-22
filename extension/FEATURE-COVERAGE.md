@@ -17,7 +17,7 @@
 | Subtasks, notes, work times | Per-task local controls, agenda grouping | Implemented, persistence tested |
 | Todo progress visuals | In-page progress ring, grouped cards, completed tab, course colors and task count | Implemented in fixture; original browser installation was unavailable for live post-change visual verification |
 | Assignment reminders | Browser alarms, deduplicated notifications, configurable lead | Implemented with mock extension tests; OS notification behavior unverified |
-| Plan/calendar sync | Work blocks, ICS export, Google/Outlook event links | Continuous/bidirectional OAuth calendar sync not implemented |
+| Plan/calendar sync | Work blocks, ICS export, Google/Outlook event links; one-way sync into a CourseLark calendar on Google (OAuth token flow), Outlook (OAuth PKCE) and iCloud (CalDAV with app-specific password), every 5 minutes, direct from the browser | Implemented with mocked provider tests. Google/Outlook need public OAuth client IDs in `src/calendar-config.js`; real-account sync unverified. Changes made inside the provider calendar are not pulled back. |
 | Credit-weighted GPA | Current and cumulative in-page overview; configurable whole-letter or plus/minus scale, credits, course exclusions, prior GPA and term choice; standalone grade planner | Implemented and tested; school-specific arbitrary point scale editor remains unimplemented |
 | Individual grade goals | Per-course goals and final-score requirement | Implemented and tested |
 | Assignment what-if | Hypothetical points-based grades | Implemented; weighted/drop-rule policies not mirrored from LMS |

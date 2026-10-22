@@ -1,7 +1,7 @@
 # CourseLark Terms of Use
 
 **Effective October 21, 2026**
-**Version:** 2026-10-21.1
+**Version:** 2026-10-21.2
 **Operator:** Noah Fishman
 **Contact:** ntfishman@gmail.com
 
