@@ -108,3 +108,13 @@ test('explicit future term preview uses current estimate rather than synthetic f
  const future=term(3,'Spring 2027','2027-01-10','2027-05-20');const result=gpaSummary([c('preview',95,3,{...future,finalGrade:0})],{now,gpaTermKey:future.termKey});
  assert.equal(result.current.gpa,4);assert.equal(result.current.rows[0].basis,'current-estimate');assert.equal(result.cumulative.gpa,null);
 });
+
+test('custom percentage scale maps scores by cutoff, keeps letter grades, and falls back when empty',()=>{
+ const courses=[c('math',92),c('biology',86),c('art',50)];
+ const custom='95 4\n85=3.5\n70, 2\nnonsense\n0 0';
+ const summary=gpaSummary(courses,{now,gpaScale:'custom',customScale:custom});
+ assert.equal(summary.scale,'custom');
+ assert.deepEqual(summary.current.rows.map(r=>r.points),[3.5,3.5,0]);
+ assert.equal(gradePoint('B+','custom',0,[{min:90,points:4}]),3.3);
+ assert.equal(gpaSummary(courses,{now,gpaScale:'custom',customScale:'junk'}).scale,'whole');
+});
