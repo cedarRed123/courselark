@@ -97,6 +97,11 @@ try {
   await page.evaluate(()=>{const settings=structuredClone(window.__campus.settings);Object.assign(settings,{showGpa:true,showTodo:true,showNotes:true,showAssignments:true,showGrades:true,assignmentPreview:false});settings.theme={...settings.theme,images:['https://example.com/community.png']};window.__updateCampus({settings});});
   await page.waitForSelector('#open-campus-gpa .oc-metric strong');
   assert.match(await first.locator('.ic-DashboardCard__header_image').evaluate(el=>el.style.backgroundImage),/community.png/);
+  await page.evaluate(()=>{const settings=structuredClone(window.__campus.settings);settings.customCSS='.ic-DashboardCard{outline:3px solid rgb(1, 2, 3)}</style><script>window.__pwned=1</script>';window.__updateCampus({settings});});
+  await page.waitForFunction(()=>getComputedStyle(document.querySelector('.ic-DashboardCard')).outlineColor==='rgb(1, 2, 3)');
+  assert.equal(await page.evaluate(()=>window.__pwned),undefined);
+  await page.evaluate(()=>{const settings=structuredClone(window.__campus.settings);settings.customCSS='';window.__updateCampus({settings});});
+  await page.waitForFunction(()=>getComputedStyle(document.querySelector('.ic-DashboardCard')).outlineColor!=='rgb(1, 2, 3)');
   assert.equal(await page.locator('.open-campus-card-extra button').count(),0);
   // Disconnect restores original host styles and removes all injected data.
   await page.evaluate(() => {const settings = structuredClone(window.__campus.settings); settings.lmsOrigins = []; window.__updateCampus({settings});});

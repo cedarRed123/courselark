@@ -10,9 +10,9 @@
 | Auto-rotate and history | Daily rotation; unrestricted local history | Implemented; daily rotation does not add history snapshots |
 | Image editor | Per-card HTTPS background, brightness, blur | Implemented; no crop/advanced bitmap editor |
 | Community themes, reactions, submissions | Public BetterCampus catalog and theme-file exchange | Browsing/import implemented; publishing, likes/comments/review not implemented |
-| Fonts, gradients, density/sidebar controls | Five installed font families; gradients, compact cards, hide logo/feedback, show links/grades | Implemented subset; custom arbitrary font loading, tab icons and custom CSS not implemented |
+| Fonts, gradients, density/sidebar controls | Five installed font families; gradients, compact cards, hide logo/feedback, show links/grades | Google Fonts families, layered gradients/HTTPS sidebar images and user custom CSS implemented; tab icons not implemented |
 | Course customization | Colors/images/names/codes/visibility/custom links; existing Canvas images preserved unless overridden | Implemented; fixture verifies injection/restoration |
-| Assignment list/deadlines | Canvas paginated same-origin API import, search/filter, completion; inline Canvas right sidebar with timeframe, groups, progress and local add task | Implemented and synthetic integration tested; refresh is manual |
+| Assignment list/deadlines | Canvas paginated same-origin API import, search/filter, completion; inline Canvas right sidebar with timeframe, groups, progress and local add task | Implemented and synthetic integration tested; one-time site enable, then automatic refresh on each visit (30-minute throttle) |
 | Dashboard assignment preview | Text-only descriptions in workspace and injected Canvas cards | Implemented; dashboard announcement preview not implemented |
 | Subtasks, notes, work times | Per-task local controls, agenda grouping | Implemented, persistence tested |
 | Todo progress visuals | In-page progress ring, grouped cards, completed tab, course colors and task count | Implemented in fixture; original browser installation was unavailable for live post-change visual verification |
