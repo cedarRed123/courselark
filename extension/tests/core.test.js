@@ -13,3 +13,14 @@ test('calendar provider URLs exclude private task notes',()=>{const task={title:
 test('backup restore preserves approved origins and rejects malformed shapes',()=>{const s=initial(),data=initial();s.settings.lmsOrigins=['https://school.example'];data.settings.lmsOrigins=['https://evil.example'];assert.deepEqual(mergeImport(s,data).settings.lmsOrigins,s.settings.lmsOrigins);assert.throws(()=>mergeImport(s,{schema:2}));assert.throws(()=>mergeImport(s,{...data,tasks:{}}));assert.throws(()=>mergeImport(s,{...data,courses:[{id:'1',name:'Injected',credits:'<img>',goal:90}]}));});
 test('study parser preserves colons in definitions and blocks executable URLs',()=>{const cards=studyFromText('Mitosis : division: two cells\nNo delimiter');assert.equal(cards.length,1);assert.equal(cards[0].back,'division: two cells');assert.equal(safeURL('javascript:alert(1)'), '');});
 test('blocks score intersecting lines once and charms detect runs',()=>{const board=Array(36).fill(0);for(let i=0;i<6;i++){board[i]=1;board[i*6]=1;}assert.deepEqual(clearLines(board),{rows:1,columns:1,cells:11});assert.equal(board.reduce((a,b)=>a+b),0);const charms=Array.from({length:36},(_,i)=>i%5);charms[0]=charms[1]=charms[2]=4;assert.ok(findMatches(charms).includes(0));assert.ok(findMatches(charms).includes(2));});
+
+test('assignment what-if applies drop rules, never-drop, and course weighting choice',()=>{
+ const groups=[{id:1,weight:75,dropLowest:1,neverDrop:['a']},{id:2,weight:25,dropHighest:1}];
+ const list=[{id:'a',canvasId:'a',group:1,score:10,points:100},{id:'b',group:1,score:50,points:100},{id:'c',group:1,score:90,points:100},{id:'d',group:2,score:100,points:10},{id:'e',group:2,score:5,points:10}];
+ // Group 1 drops b (a is protected): (10+90)/200=50%. Group 2 drops its highest: 50%. Weighted: 50.
+ assert.equal(assignmentGrade(list,groups),50);
+ // Unweighted: points of kept work across groups = (10+90+5)/210.
+ assert.equal(assignmentGrade(list,groups,false).toFixed(4),(100*105/210).toFixed(4));
+ // Drop rules never remove the last scored assignment in a group.
+ assert.equal(assignmentGrade([{id:'x',group:1,score:7,points:10}],[{id:1,weight:100,dropLowest:3}]),70);
+});

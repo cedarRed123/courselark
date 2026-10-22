@@ -20,7 +20,7 @@
 | Plan/calendar sync | Work blocks, ICS export, Google/Outlook event links; one-way sync into a CourseLark calendar on Google (OAuth token flow), Outlook (OAuth PKCE) and iCloud (CalDAV with app-specific password), every 5 minutes, direct from the browser | Implemented with mocked provider tests. Google/Outlook need public OAuth client IDs in `src/calendar-config.js`; real-account sync unverified. Changes made inside the provider calendar are not pulled back. |
 | Credit-weighted GPA | Current and cumulative in-page overview; configurable whole-letter or plus/minus scale, credits, course exclusions, prior GPA and term choice; standalone grade planner | Implemented and tested, including a custom percentage-to-points scale editor in the Canvas GPA settings |
 | Individual grade goals | Per-course goals and final-score requirement | Implemented and tested |
-| Assignment what-if | Hypothetical points-based grades | Implemented; weighted/drop-rule policies not mirrored from LMS |
+| Assignment what-if | Hypothetical points-based grades | Implemented; Canvas assignment-group weights, drop-lowest/highest and never-drop rules are imported and applied (percentage-based drop choice) |
 | Grade trends | Local score snapshots with bar chart | Implemented; no historical server data |
 | Notes by class/task | Class notebooks, task notes, dashboard excerpts | Implemented, persistence tested |
 | Notes/files uploads | Text/MD/CSV/JSON, searchable PDF, DOCX, PPTX text extraction | Implemented; scanned-document OCR and full slide visuals are not included |

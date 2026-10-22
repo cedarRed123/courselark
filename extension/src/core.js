@@ -153,11 +153,16 @@ export function requiredFinal(current,goal,weight) {
  const w=Number(weight)/100;if(![Number(current),Number(goal),w].every(Number.isFinite)||w<=0||w>1)throw Error('Final weight must be greater than 0 and at most 100%.');
  return (Number(goal)-Number(current)*(1-w))/w;
 }
-export function assignmentGrade(assignments,groups=[]) {
+// Canvas-style estimate: per-group drop rules (by percentage), then group weights when the course uses them.
+export function assignmentGrade(assignments,groups=[],weighted=true) {
  const scored=assignments.filter(a=>a.score!==null&&a.score!==undefined&&a.score!==''&&Number(a.points)>0&&!a.excused);
  if(!groups.length){const points=scored.reduce((s,a)=>s+Number(a.points),0);return points?100*scored.reduce((s,a)=>s+Number(a.score),0)/points:null;}
+ const kept=group=>{let list=scored.filter(a=>String(a.group)===String(group.id));const keep=new Set((group.neverDrop||[]).map(String)),ratio=a=>Number(a.score)/Number(a.points);
+  for(const [count,lowest] of [[group.dropLowest,true],[group.dropHighest,false]]){const droppable=list.filter(a=>!keep.has(String(a.canvasId??a.id))).sort((x,y)=>lowest?ratio(x)-ratio(y):ratio(y)-ratio(x));const n=Math.min(Number(count)||0,droppable.length,list.length-1);const drop=new Set(droppable.slice(0,Math.max(0,n)));list=list.filter(a=>!drop.has(a));}
+  return list;};
+ if(!weighted){const list=groups.flatMap(kept),points=list.reduce((s,a)=>s+Number(a.points),0);return points?100*list.reduce((s,a)=>s+Number(a.score),0)/points:null;}
  let sum=0,weight=0;
- for(const group of groups){const a=scored.filter(a=>a.group===group.id),p=a.reduce((s,x)=>s+Number(x.points),0);if(p&&group.weight>0){sum+=100*a.reduce((s,x)=>s+Number(x.score),0)/p*group.weight;weight+=group.weight;}}
+ for(const group of groups){const a=kept(group),p=a.reduce((s,x)=>s+Number(x.points),0);if(p&&group.weight>0){sum+=100*a.reduce((s,x)=>s+Number(x.score),0)/p*group.weight;weight+=group.weight;}}
  return weight?sum/weight:null;
 }
 export function isDark(settings,date=new Date(),system=false) {
