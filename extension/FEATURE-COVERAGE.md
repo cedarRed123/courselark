@@ -2,7 +2,7 @@
 
 **This is not complete production parity with BetterCampus 9.8.15.** Implemented features have no paywalls. The repository analyzed with REA is version 5.12.6; current additional requirements come from the public website/store. Original source/assets have not been copied into this implementation.
 
-| Public feature | Open Campus implementation | Status / boundary |
+| Public feature | CourseLark implementation | Status / boundary |
 | --- | --- | --- |
 | Dark mode, custom colors | Original palettes, editable theme colors | Implemented; representative Canvas fixture tested, institution layouts unverified |
 | Schedule/device dark mode | Time windows and system preference | Implemented and tested |
@@ -28,7 +28,7 @@
 | Audio notes/history | Local microphone recording, playback, separate audio exports | Implemented; real microphone/device behavior unverified |
 | Live transcription | Browser speech recognition when supported | Optional; vendor service may be used, support varies |
 | Offline transcription | Local ffmpeg → whisper.cpp adapter | Engine/model required; real transcription unverified |
-| Smart notes, file chat | Local Ollama proxy, notebook context including extracted file text | Implemented adapter; real model generation unverified |
+| Smart notes, file chat | Loopback companion forwards notebook context to configured Ollama, which may use a cloud model | Implemented adapter; real model generation unverified |
 | AI study-set generation | Requested count/difficulty, validated JSON cards, edit before use | Implemented adapter; model-dependent accuracy and limits |
 | Flashcards/quizzes/study sets | Unlimited local sets, flipping, multiple-choice practice with correct definition | Implemented and browser tested; explanation is the source definition |
 | Match | Term-definition pairing; time penalty for wrong pairs | Original game implemented |

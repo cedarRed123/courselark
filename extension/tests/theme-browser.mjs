@@ -6,6 +6,7 @@ const theme={code:'test123',title:'Test ocean',credits:'Example creator',exports
 try{
  await page.route('https://api.bettercampus.com/themes**',route=>{const url=new URL(route.request().url());const row={code:theme.code,title:theme.title,credits:theme.credits,category:'ocean'};const message=url.pathname.endsWith('/test123')?theme:url.searchParams.has('search')?[row]:url.searchParams.get('page')==='2'?[{...row,title:'Second page theme'}]:Array.from({length:20},(_,i)=>({...row,title:i?`Example ${i}`:row.title}));return route.fulfill({contentType:'application/json',body:JSON.stringify({message})});});
  await page.goto((process.env.OPEN_CAMPUS_BASE_URL||'http://127.0.0.1:4317')+'/#themes');
+ await page.locator('[data-action="legal-accept"]').click();
  await page.getByRole('button',{name:'Community themes',exact:true}).click();
  await page.getByRole('button',{name:'Next',exact:true}).click();await page.getByText('Second page theme',{exact:true}).waitFor();await page.locator('#community-search').fill('ocean');await page.getByRole('button',{name:'Search community',exact:true}).click();await page.getByText('Test ocean',{exact:true}).waitFor();assert.equal(await page.locator('#community-page').textContent(),'Page 1');await page.getByRole('button',{name:'Preview',exact:true}).click();
  await page.getByRole('button',{name:'Install & apply',exact:true}).click();

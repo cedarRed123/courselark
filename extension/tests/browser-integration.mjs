@@ -2,13 +2,13 @@
 import assert from 'node:assert/strict';
 import {readFile, mkdir} from 'node:fs/promises';
 import {fileURLToPath} from 'node:url';
-import {initial,gpaSummary} from '../src/core.js';
+import {initial,gpaSummary,legalVersion} from '../src/core.js';
 const {chromium} = await import(process.env.OPEN_CAMPUS_PLAYWRIGHT || 'playwright');
 const contentPath = fileURLToPath(new URL('../src/content.js', import.meta.url));
 const origin = 'https://school.instructure.com';
 const source = await readFile(contentPath, 'utf8');
 const themeRuntime=await readFile(new URL('../src/theme-runtime.js',import.meta.url),'utf8');
-const state = initial(); state.settings.lmsOrigins = [origin]; state.settings.activeAccounts = {[origin]: '7'};
+const state = initial(); state.legalAcceptance={version:legalVersion,acceptedAt:'2026-10-18T00:00:00.000Z'}; state.settings.lmsOrigins = [origin]; state.settings.activeAccounts = {[origin]: '7'};
 state.settings.mode = 'dark'; state.settings.compact = true; state.settings.hideLogo = true;
 const courseId = origin + '|user:7|course:42';
 state.courses = [{id: courseId, url: origin + '/courses/42', sourceOrigin: origin, userId: '7', grade: 93, name: 'Fall 2026 Biology', credits: 3}, {id:origin+'|user:7|course:99',url:origin+'/courses/99',sourceOrigin:origin,userId:'7',grade:91,name:'Spring 2026 History',credits:3}];
@@ -65,7 +65,7 @@ try {
   await page.locator('#open-campus-launch').click();
   assert.equal(await page.locator('#open-campus-panel[open]').count(),1);
   assert.match(await page.locator('#open-campus-panel iframe').getAttribute('src'),/index\.html$/);
-  await page.locator('#open-campus-panel .oc-panel-bar').getByRole('button',{name:'Close Open Campus panel'}).click();
+  await page.locator('#open-campus-panel .oc-panel-bar').getByRole('button',{name:'Close CourseLark panel'}).click();
   await page.locator('#open-campus-panel').waitFor({state:'detached'});
   await page.evaluate(()=>window.__contentListeners.forEach(fn=>fn({type:'OPEN_PANEL',page:'grades'},{},()=>{})));
   assert.match(await page.locator('#open-campus-panel iframe').getAttribute('src'),/#grades$/);
@@ -107,8 +107,11 @@ try {
   await page.evaluate(() => {const settings=structuredClone(window.__campus.settings);settings.lmsOrigins=['https://school.instructure.com'];window.__updateCampus({settings});});
   await page.waitForSelector('#open-campus-gpa .oc-metric strong');
   assert.equal(await page.locator('#open-campus-style,#open-campus-widgets-style').count(),2);
+  await page.evaluate(() => window.__updateCampus({legalAcceptance:null}));
+  await page.waitForFunction(() => !document.querySelector('#open-campus-launch'));
+  assert.equal(await page.locator('#open-campus-gpa,#open-campus-todo,.open-campus-grade').count(),0);
   assert.deepEqual(errors, []);
-  console.log('PASS: Canvas dashboard styles, cards, grade, notes, previews, dynamic mounts, workspace launch, stale-style cleanup and disconnect restoration. No browser errors.');
+  console.log('PASS: Canvas dashboard styles, cards, grade, notes, previews, dynamic mounts, workspace launch, stale-style cleanup, disconnect and Terms-revocation restoration. No browser errors.');
   // An unconnected page is unchanged.
   const unconnected = await browser.newPage(); await unconnected.route('**/*', r => r.fulfill({contentType: 'text/html', body: fixture}));
   await unconnected.addInitScript(() => {window.chrome = {storage: {local: {get: async () => ({campus: {settings: {lmsOrigins: []}}})}}};});

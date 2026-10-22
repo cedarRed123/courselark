@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "Open Campus",
+  "name": "CourseLark",
   "version": "0.4.0",
   "description": "Local-first themes, assignments, GPA, notes, study sets and planning. No account or subscription.",
   "permissions": [
@@ -22,7 +22,7 @@
   },
   "action": {
     "default_popup": "popup.html",
-    "default_title": "Open Campus"
+    "default_title": "CourseLark"
   },
   "options_page": "index.html",
   "web_accessible_resources": [

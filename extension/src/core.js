@@ -1,4 +1,5 @@
 export const uid = () => crypto.randomUUID();
+export const legalVersion = '2026-10-19.1';
 export const dayKey = (date = new Date()) => {const d=new Date(date);return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;};
 export const themes = [
  {id:'sage',name:'Quiet campus',bg:'#f4f6f1',surface:'#ffffff',text:'#253831',accent:'#4c7663',palette:['#86a98d','#d6bc86','#a0b5d3','#bd9dba'],font:'system-ui',dark:false},
@@ -7,7 +8,7 @@ export const themes = [
  {id:'ocean',name:'Ocean blue',bg:'#edf5fa',surface:'#ffffff',text:'#233d52',accent:'#397d9e',palette:['#70a6bb','#8cbfae','#caa585','#9c9cc9'],font:'system-ui',dark:false},
  {id:'ember',name:'Evening ember',bg:'#211c1a',surface:'#312925',text:'#f6e7d9',accent:'#e2a376',palette:['#ae7665','#b3986b','#768b72','#8b829a'],font:'Georgia',dark:true}
 ];
-export const initial = () => ({schema:1,tasks:[],courses:[],notes:[],sets:[],themes:[],themeHistory:[],activity:[],scores:{},settings:{theme:themes[0],mode:'light',darkStart:'19:00',darkEnd:'07:00',showGpa:true,showTodo:true,showNotes:true,showAssignments:true,assignmentPreview:true,fullWidth:false,disableOverlay:false,showCompanion:true,showQuote:true,assignmentCount:3,rotate:false,compact:false,gradient:true,hideLogo:false,hideFeedback:false,showGrades:true,cardLinks:true,font:'system-ui',reminders:true,reminderMinutes:60,focusMinutes:25,breakMinutes:5,breathSeconds:60,quote:'Small steps are still progress.',playlist:'',model:'qwen3:4b',lmsOrigins:[],cardOverrides:{},gpaScale:'whole',gpaTermKey:'auto',priorGpa:0,priorCredits:0,gpaHistory:[]}});
+export const initial = () => ({schema:1,legalAcceptance:null,tasks:[],courses:[],notes:[],sets:[],themes:[],themeHistory:[],activity:[],scores:{},settings:{theme:themes[0],mode:'light',darkStart:'19:00',darkEnd:'07:00',showGpa:true,showTodo:true,showNotes:true,showAssignments:true,assignmentPreview:true,fullWidth:false,disableOverlay:false,showCompanion:true,showQuote:true,assignmentCount:3,rotate:false,compact:false,gradient:true,hideLogo:false,hideFeedback:false,showGrades:true,cardLinks:true,font:'system-ui',reminders:false,reminderMinutes:60,focusMinutes:25,breakMinutes:5,breathSeconds:60,quote:'Small steps are still progress.',playlist:'',model:'qwen3:4b',lmsOrigins:[],cardOverrides:{},gpaScale:'whole',gpaTermKey:'auto',priorGpa:0,priorCredits:0,gpaHistory:[]}});
 export function mergeImport(state, incoming) {
  if (!incoming || incoming.schema!==1) throw Error('Unsupported backup format.');
  for (const key of ['tasks','courses','notes','sets','themes','themeHistory','activity']) if(!Array.isArray(incoming[key])) throw Error(`Invalid ${key}.`);
@@ -20,6 +21,7 @@ export function mergeImport(state, incoming) {
  for(const t of [clean.settings.theme,...clean.themes,...clean.themeHistory]){item(t,'theme');string(t.name,'theme name');for(const key of ['bg','surface','text','accent'])if(!/^#[\da-f]{6}$/i.test(t[key]))throw Error('Invalid theme color.');if(!Array.isArray(t.palette)||t.palette.some(c=>!/^#[\da-f]{6}$/i.test(c)))throw Error('Invalid theme palette.');}
  for(const activity of clean.activity){item(activity,'activity');string(activity.day,'activity day');number(activity.xp,'activity XP');}
  clean.settings={...initial().settings,...state.settings,...clean.settings,lmsOrigins:state.settings.lmsOrigins};
+ clean.legalAcceptance=state.legalAcceptance||null;
  if(!['light','dark','system','schedule'].includes(clean.settings.mode))throw Error('Invalid display mode.');
  for(const time of [clean.settings.darkStart,clean.settings.darkEnd])if(!/^([01]\d|2[0-3]):[0-5]\d$/.test(time))throw Error('Invalid dark mode schedule.');
  for(const key of ['focusMinutes','breakMinutes','breathSeconds','reminderMinutes'])if(Number(clean.settings[key])<=0||!Number.isFinite(Number(clean.settings[key])))throw Error(`Invalid ${key}.`);
@@ -171,7 +173,7 @@ export function studyFromText(text) {
 const icsEscape = s=>String(s??'').replace(/\\/g,'\\\\').replace(/\r?\n/g,'\\n').replace(/,/g,'\\,').replace(/;/g,'\\;');
 const stamp=d=>new Date(d).toISOString().replace(/[-:]/g,'').replace(/\.\d{3}/,'');
 export function calendarICS(tasks,now=new Date()) {
- const lines=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Open Campus//Planner//EN','CALSCALE:GREGORIAN','METHOD:PUBLISH'];
+ const lines=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//CourseLark//Planner//EN','CALSCALE:GREGORIAN','METHOD:PUBLISH'];
  for(const task of tasks){const start=task.workStart||task.due;if(!start||!Number.isFinite(Date.parse(start)))continue;const end=task.workEnd||new Date(Date.parse(start)+Number(task.minutes||30)*60000);
  lines.push('BEGIN:VEVENT',`UID:${icsEscape(task.id)}@open-campus`,`DTSTAMP:${stamp(now)}`,`DTSTART:${stamp(start)}`,`DTEND:${stamp(end)}`,`SUMMARY:${icsEscape(task.title)}`,`DESCRIPTION:${icsEscape(task.notes||'')}`,`STATUS:${task.done?'CANCELLED':'CONFIRMED'}`,'END:VEVENT');}
  lines.push('END:VCALENDAR');

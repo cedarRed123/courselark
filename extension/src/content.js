@@ -1,9 +1,10 @@
-/* Open Campus: original, account-aware dashboard decoration. */
+/* CourseLark: original, account-aware dashboard decoration. */
 (async () => {
+  const legalVersion = '2026-10-19.1';
   if (globalThis.__openCampusInjected) return;
   globalThis.__openCampusInjected = true;
   let state = (await chrome.storage.local.get('campus')).campus;
-  if (!state?.settings?.lmsOrigins?.includes(location.origin)) return;
+  if (state?.legalAcceptance?.version !== legalVersion || !state?.settings?.lmsOrigins?.includes(location.origin)) return;
   const {safeBackground,applyFont}=await import(chrome.runtime.getURL('src/theme-runtime.js'));
   const style = document.createElement('style'); style.id = 'open-campus-style'; document.head.append(style);
   const widgetStyle = document.createElement('style'); widgetStyle.id = 'open-campus-widgets-style'; document.head.append(widgetStyle);
@@ -12,19 +13,19 @@
   const originals = new WeakMap();
   const media = matchMedia('(prefers-color-scheme: dark)');
   const todoView = {range:'week', offset:0, tab:'open'};
-  const launch = document.createElement('button'); launch.id = 'open-campus-launch'; launch.textContent = '✦ Open Campus';
+  const launch = document.createElement('button'); launch.id = 'open-campus-launch'; launch.textContent = '✦ CourseLark';
   launch.type = 'button'; document.body.append(launch);
   const panelPages = new Set(['dashboard','tasks','planner','grades','notes','study','themes','focus','settings']);
   function openPanel(page = 'dashboard') {
-    if (!state?.settings?.lmsOrigins?.includes(location.origin)) return false;
+    if (state?.legalAcceptance?.version !== legalVersion || !state?.settings?.lmsOrigins?.includes(location.origin)) return false;
     if (!panelPages.has(page)) return false;
     let panel = document.querySelector('#open-campus-panel');
     if (!panel) {
-      panel = document.createElement('dialog'); panel.id = 'open-campus-panel'; panel.setAttribute('aria-label','Open Campus workspace');
-      const bar = make('div',null,'oc-panel-bar'), title = make('strong','✦ Open Campus');
-      const close = make('button','×'); close.type='button'; close.setAttribute('aria-label','Close Open Campus panel'); close.addEventListener('click',()=>panel.close());
+      panel = document.createElement('dialog'); panel.id = 'open-campus-panel'; panel.setAttribute('aria-label','CourseLark workspace');
+      const bar = make('div',null,'oc-panel-bar'), title = make('strong','✦ CourseLark');
+      const close = make('button','×'); close.type='button'; close.setAttribute('aria-label','Close CourseLark panel'); close.addEventListener('click',()=>panel.close());
       bar.append(title,close);
-      const frame = document.createElement('iframe'); frame.title='Open Campus workspace'; frame.setAttribute('allow','microphone');
+      const frame = document.createElement('iframe'); frame.title='CourseLark workspace'; frame.setAttribute('allow','microphone');
       frame.src = chrome.runtime.getURL('index.html');
       panel.append(bar,frame); document.body.append(panel);
       panel.addEventListener('close',()=>panel.remove());
@@ -165,12 +166,12 @@
     if(!shown.length)widget.append(make('div',todoView.tab==='done'?'No completed tasks in this timeframe.':'Nothing due in this timeframe.','oc-empty'));
     let lastGroup='';const today=new Date();today.setHours(0,0,0,0);
     for(const task of shown){const due=new Date(task.due),day=new Date(due);day.setHours(0,0,0,0);const delta=Math.round((day.getTime()-today.getTime())/86400000);const group=delta<0?'OVERDUE':delta===0?'DUE TODAY':delta===1?'DUE TOMORROW':delta<7?`DUE IN ${delta} DAYS`:'DUE LATER';if(group!==lastGroup){widget.append(make('div',group,'oc-section'));lastGroup=group;}
-      const course=courseFor(task),row=make('div',null,'oc-task');row.style.setProperty('--oc-course',colorFor(course));row.append(make('div',null,'oc-strip'));const body=make('div',null,'oc-body');body.append(make('small',course?.code||course?.name||'Personal'));const url=safeUrl(task.url),link=make(url?'a':'div',task.title);if(url){link.href=url;link.target='_blank';link.rel='noopener noreferrer';}body.append(link);const dueLine=make('div',null,'oc-due');dueLine.append(make('span',`Due ${due.toLocaleDateString(undefined,{month:'numeric',day:'numeric'})} at ${due.toLocaleTimeString(undefined,{hour:'numeric',minute:'2-digit'})}`));if(Number.isFinite(Number(task.points))&&task.points!=null)dueLine.append(make('span',`${task.points} pts`));body.append(dueLine);row.append(body);const complete=make('button',task.done?'✓':'');complete.type='button';complete.setAttribute('aria-label',(task.done?'Mark incomplete: ':'Mark complete: ')+task.title);complete.setAttribute('aria-pressed',String(!!task.done));complete.title=task.source==='canvas'?'Track completion in Open Campus; Canvas submission stays unchanged.':'Mark task complete';complete.addEventListener('click',()=>saveChange(latest=>{const target=latest.tasks.find(t=>t.id===task.id);if(target){target.done=!target.done;if(target.source==='canvas')target.localDoneOverride=target.done;}}));row.append(complete);widget.append(row);
+      const course=courseFor(task),row=make('div',null,'oc-task');row.style.setProperty('--oc-course',colorFor(course));row.append(make('div',null,'oc-strip'));const body=make('div',null,'oc-body');body.append(make('small',course?.code||course?.name||'Personal'));const url=safeUrl(task.url),link=make(url?'a':'div',task.title);if(url){link.href=url;link.target='_blank';link.rel='noopener noreferrer';}body.append(link);const dueLine=make('div',null,'oc-due');dueLine.append(make('span',`Due ${due.toLocaleDateString(undefined,{month:'numeric',day:'numeric'})} at ${due.toLocaleTimeString(undefined,{hour:'numeric',minute:'2-digit'})}`));if(Number.isFinite(Number(task.points))&&task.points!=null)dueLine.append(make('span',`${task.points} pts`));body.append(dueLine);row.append(body);const complete=make('button',task.done?'✓':'');complete.type='button';complete.setAttribute('aria-label',(task.done?'Mark incomplete: ':'Mark complete: ')+task.title);complete.setAttribute('aria-pressed',String(!!task.done));complete.title=task.source==='canvas'?'Track completion in CourseLark; Canvas submission stays unchanged.':'Mark task complete';complete.addEventListener('click',()=>saveChange(latest=>{const target=latest.tasks.find(t=>t.id===task.id);if(target){target.done=!target.done;if(target.source==='canvas')target.localDoneOverride=target.done;}}));row.append(complete);widget.append(row);
     }
     const add=make('button','+ Add task','oc-add');add.type='button';add.addEventListener('click',openTaskDialog);widget.append(add);
   }
   function apply() {
-    const connected = state?.settings?.lmsOrigins?.includes(location.origin);
+    const connected = state?.legalAcceptance?.version === legalVersion && state?.settings?.lmsOrigins?.includes(location.origin);
     if (!connected) {
       observer?.disconnect();document.querySelector('#open-campus-font')?.remove(); style.remove(); widgetStyle.remove(); launch.remove();document.querySelector('#open-campus-nav-item')?.remove();
       for (const card of document.querySelectorAll('.ic-DashboardCard')) restoreCard(card);
@@ -252,7 +253,7 @@
   let timer, observer;
   function safeApply() {
     observer?.disconnect();
-    try { apply(); } finally { if (state?.settings?.lmsOrigins?.includes(location.origin)) observer?.observe(document.body, {childList: true, subtree: true}); }
+    try { apply(); } finally { if (state?.legalAcceptance?.version === legalVersion && state?.settings?.lmsOrigins?.includes(location.origin)) observer?.observe(document.body, {childList: true, subtree: true}); }
   }
   observer = new MutationObserver(records => {
     const relevant = records.some(record => !record.target.closest?.('[class^="open-campus-"],#open-campus-preview,#open-campus-gpa,#open-campus-todo,#open-campus-gpa-dialog,#open-campus-task-dialog') && [...record.addedNodes, ...record.removedNodes].some(n => n.nodeType === 1 && !n.className?.startsWith?.('open-campus-') && !n.id?.startsWith('open-campus-')));
