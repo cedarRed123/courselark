@@ -47,6 +47,7 @@ function canvasFixture() {
       return response([{id: 1, name: 'Lab', due_at: '2026-10-20T12:00:00Z', description: '<p>Observe</p>', points_possible: 100, assignment_group_id: 9, submission: {score: 93, workflow_state: 'graded'}}], '</api/v1/courses/42/assignments?page=2>; rel="next"');
     }
     if (u.pathname === '/api/v1/courses/84/assignments') return response({}, '', 403);
+    if (u.pathname === '/api/v1/announcements') return response([{id: 5, context_code: 'course_42', title: 'Exam moved', message: '<p>Room <b>210</b> &amp; bring ID<script>steal()</script></p>', posted_at: '2026-10-20T12:00:00Z', html_url: 'javascript:alert(1)'}, {id: 6, context_code: 'course_999', title: 'Other'}]);
     throw Error('Unexpected URL ' + url);
   };
 }
@@ -84,6 +85,11 @@ test('Canvas imports both course and assignment pages, reports access errors, ke
   assert.match(result.tasks[0].id, /user:7\|assignment:1$/);
   assert.ok(fetchCalls.every(c => c.opts.credentials === 'same-origin' && (!c.opts.method || c.opts.method === 'GET')));
   assert.ok(fetchCalls.every(c => new URL(c.url).origin === origin));
+  assert.equal(result.announcements.length, 1);
+  assert.equal(result.announcements[0].message, 'Room 210 & bring ID');
+  assert.equal(result.announcements[0].url, origin + '/courses/42/discussion_topics/5');
+  const announcementCall = new URL(fetchCalls.find(c => c.url.includes('/announcements')).url);
+  assert.deepEqual(announcementCall.searchParams.getAll('context_codes[]'), ['course_42', 'course_84']);
 });
 
 test('refuse cross-origin, changed-endpoint and repeated pagination before fetching the link', async () => {
@@ -170,6 +176,7 @@ test('Canvas term/posted-grade metadata includes historical courses without coll
       ]);
     }
     if(u.pathname==='/api/v1/courses/42/assignments'||u.pathname==='/api/v1/courses/90/assignments')return response([]);
+    if(u.pathname==='/api/v1/announcements'){assert.deepEqual(u.searchParams.getAll('context_codes[]'),['course_42','course_90']);return response([]);}
     throw Error('Historical assignments must not be fetched: '+url);
   };
   const result=await background.collectLMS();assert.equal(result.courses.length,3);
