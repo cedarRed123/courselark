@@ -48,6 +48,8 @@ node server.mjs
 
 Open saved audio in a notebook → **Transcribe locally**. The companion normally deletes temporary audio and transcript files after processing; an abrupt shutdown may leave them behind. Without the engine/model the UI reports the missing configuration. Real model generation and real microphone/Whisper transcription have not been verified on this machine.
 
+For scanned PDFs, install [Tesseract OCR](https://github.com/tesseract-ocr/tesseract) (for example `brew install tesseract tesseract-lang`) and start the companion; set `TESSERACT_COMMAND` if it is not on your `PATH`. Open the PDF in a notebook → **Read scanned pages (OCR)**. Pages are read on your computer and the text is appended to the notebook. Real Tesseract output has not been verified on this machine.
+
 The companion also serves a standalone dashboard at `http://127.0.0.1:4317`. Its browser storage is separate from extension storage; transfer ordinary data via JSON backup. LMS import/reminders require the installed extension. The transport bounds requests at 128 MB (16 MB for AI JSON) to prevent resource exhaustion, not to sell an upgrade. Local disk, memory, context window and browser limits still apply.
 
 ## Calculation and import boundaries
