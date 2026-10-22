@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "CourseLark",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "description": "Local-first themes, assignments, GPA, notes, study sets and planning. No account or subscription.",
   "permissions": [
     "storage",
@@ -40,7 +40,8 @@
         "src/theme-compat.js",
         "src/theme-runtime.js",
         "src/calendar-sync.js",
-        "src/calendar-config.js"
+        "src/calendar-config.js",
+        "src/classroom.js"
       ],
       "matches": [
         "https://*/*",
@@ -53,6 +54,6 @@
     "128": "icons/icon.png"
   },
   "content_security_policy": {
-    "extension_pages": "script-src 'self'; object-src 'self'; connect-src 'self' https://www.googleapis.com https://graph.microsoft.com https://login.microsoftonline.com https://caldav.icloud.com https://*.icloud.com https://api.bettercampus.com http://localhost:11434 http://127.0.0.1:11434 http://127.0.0.1:4317 http://localhost:4317; img-src 'self' data: https:; media-src 'self' blob:; worker-src 'self';"
+    "extension_pages": "script-src 'self'; object-src 'self'; connect-src 'self' https://classroom.googleapis.com https://www.googleapis.com https://graph.microsoft.com https://login.microsoftonline.com https://caldav.icloud.com https://*.icloud.com https://api.bettercampus.com http://localhost:11434 http://127.0.0.1:11434 http://127.0.0.1:4317 http://localhost:4317; img-src 'self' data: https:; media-src 'self' blob:; worker-src 'self';"
   }
 }
