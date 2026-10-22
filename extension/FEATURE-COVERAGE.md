@@ -23,7 +23,7 @@
 | Assignment what-if | Hypothetical points-based grades | Implemented; Canvas assignment-group weights, drop-lowest/highest and never-drop rules are imported and applied (percentage-based drop choice) |
 | Grade trends | Local score snapshots with bar chart | Implemented; no historical server data |
 | Notes by class/task | Class notebooks, task notes, dashboard excerpts | Implemented, persistence tested |
-| Notes/files uploads | Text/MD/CSV/JSON, searchable PDF, DOCX, PPTX text extraction | Implemented; scanned-document OCR and full slide visuals are not included |
+| Notes/files uploads | Text/MD/CSV/JSON, searchable PDF, DOCX, PPTX text extraction | Implemented; scanned PDFs can be read with local Tesseract through the companion (OCR adds text to the notebook); full slide visuals not included |
 | PDF annotation | Pen colors/sizes, page ink stored locally, annotated-page PNG export | Implemented; annotated page PNG and whole-document annotated PDF export (pages flattened to images, so text is not selectable) |
 | Audio notes/history | Local microphone recording, playback, separate audio exports | Implemented; real microphone/device behavior unverified |
 | Live transcription | Browser speech recognition when supported | Optional; vendor service may be used, support varies |

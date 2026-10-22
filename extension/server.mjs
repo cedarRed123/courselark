@@ -33,6 +33,13 @@ const server=http.createServer(async(req,res)=>{
   if(!process.env.WHISPER_COMMAND||!process.env.WHISPER_MODEL)throw Error('Configure WHISPER_COMMAND and WHISPER_MODEL, with ffmpeg installed, to transcribe locally.');
   const dir=await mkdtemp(resolve(tmpdir(),'open-campus-audio-'));try{const input=resolve(dir,'input.audio'),wav=resolve(dir,'lecture.wav'),output=resolve(dir,'transcript');await writeFile(input,await body(req));await command(process.env.FFMPEG_COMMAND||'ffmpeg',['-y','-i',input,'-ar','16000','-ac','1',wav]);await command(process.env.WHISPER_COMMAND,['-m',process.env.WHISPER_MODEL,'-f',wav,'-otxt','-of',output]);json(res,200,{text:await readFile(output+'.txt','utf8')});}finally{await rm(dir,{recursive:true,force:true});}return;
  }
+ if(req.method==='POST'&&url.pathname==='/api/ocr'){
+  // Scanned page images to text with a local Tesseract install; nothing leaves this computer.
+  const type=req.headers['content-type'];if(!['image/png','image/jpeg'].includes(type))throw Error('Send a PNG or JPEG page image.');
+  const dir=await mkdtemp(resolve(tmpdir(),'courselark-ocr-'));try{const input=resolve(dir,type==='image/png'?'page.png':'page.jpg'),output=resolve(dir,'page');await writeFile(input,await body(req,32*1024*1024));const language=/^[a-z_+]{3,40}$/.test(url.searchParams.get('lang')||'')?url.searchParams.get('lang'):'eng';
+  try{await command(process.env.TESSERACT_COMMAND||'tesseract',[input,output,'-l',language],5*60*1000);}catch(e){if(e.code==='ENOENT')throw Error('Install Tesseract OCR (or set TESSERACT_COMMAND) to read scanned pages locally.');throw e;}
+  json(res,200,{text:await readFile(output+'.txt','utf8')});}finally{await rm(dir,{recursive:true,force:true});}return;
+ }
  if(req.method!=='GET'){json(res,405,{error:'Method not supported.'});return;}
  const path=resolve(root,'.'+decodeURIComponent(url.pathname==='/'?'/index.html':url.pathname));if(!path.startsWith(root+sep)&&path!==resolve(root,'index.html')){json(res,403,{error:'Invalid path.'});return;}
  if(!['.html','.js','.mjs','.css','.png','.svg','.ttf','.pfb'].includes(extname(path))){json(res,404,{error:'File not served.'});return;}
