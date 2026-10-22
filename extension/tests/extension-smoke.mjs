@@ -25,7 +25,7 @@ try {
   const blocked=[];page.on('console',m=>{if(m.type()==='error'){blocked.push(m.text());console.log('CONSOLE ERROR',m.text());}});
   await page.goto(root+'index.html');await page.locator('[data-action="legal-accept"]').waitFor();
   assert.match(await page.locator('#view').textContent(),/Canvas profile identifier.*notes, files, and study activity.*Optional transfers:/s);
-  for (const [label, phrase] of [['Terms of Use','Version: 2026-10-21.3'],['Privacy Policy','Effective October 21, 2026']]) {
+  for (const [label, phrase] of [['Terms of Use','Version: 2026-10-21.4'],['Privacy Policy','Effective October 21, 2026']]) {
     const [legalPage]=await Promise.all([context.waitForEvent('page'),page.getByRole('link',{name:label}).first().click()]);
     await legalPage.waitForLoadState();
     assert.equal(new URL(legalPage.url()).origin,new URL(root).origin);
