@@ -44,7 +44,7 @@ def package(source: Path, destination: Path) -> dict:
             raise ValueError(f"{name} does not match the extension Terms version")
     files = {source / name for name in required}
     # Explicitly retain runtime code, vendored modules, fonts and notices.
-    for directory in ("src", "icons"):
+    for directory in ("src", "icons", "_locales"):
         for path in (source / directory).rglob("*"):
             if path.is_symlink():
                 raise ValueError(f"Symbolic path not permitted: {path}")
@@ -52,7 +52,7 @@ def package(source: Path, destination: Path) -> dict:
                 relative = path.relative_to(source)
                 if any(part.startswith(".") or part == "node_modules" for part in relative.parts):
                     raise ValueError(f"Unexpected hidden/dependency runtime file: {relative}")
-                if path.suffix.lower() not in {".js", ".mjs", ".css", ".png", ".svg", ".ttf", ".pfb"} and not path.name.startswith("LICENSE") and not path.name.endswith("-LICENSE"):
+                if path.suffix.lower() not in {".js", ".mjs", ".css", ".png", ".svg", ".ttf", ".pfb"} and not (relative.parts[0] == "_locales" and path.name == "messages.json") and not path.name.startswith("LICENSE") and not path.name.endswith("-LICENSE"):
                     raise ValueError(f"Unexpected runtime file; review before shipping: {relative}")
                 files.add(path)
     for name in [manifest["background"]["service_worker"], manifest["action"]["default_popup"], manifest["options_page"], *manifest.get("icons", {}).values()]:

@@ -1,0 +1,32 @@
+/* Interface translation by exact text match. Legal text, imported coursework and user content stay as written. */
+const es = {
+  'Overview': 'Resumen', 'Assignments': 'Tareas', 'Planner': 'Planificador', 'Grades & GPA': 'Notas y promedio', 'Notebooks': 'Cuadernos', 'Study sets': 'Sets de estudio', 'Appearance': 'Apariencia', 'Focus room': 'Sala de enfoque', 'Settings': 'Configuración',
+  'Your campus, at your pace.': 'Tu campus, a tu ritmo.', 'Find your rhythm.': 'Encuentra tu ritmo.', 'Up next': 'Próximo', 'Your classes': 'Tus clases', 'Announcements': 'Anuncios', 'A thought for today': 'Una idea para hoy', 'Connect your classes': 'Conecta tus clases',
+  '＋ Add assignment': '＋ Agregar tarea', '＋ Add class': '＋ Agregar clase', '＋ Add work block': '＋ Agregar bloque de trabajo', '＋ Create theme': '＋ Crear tema', '＋ New note': '＋ Nueva nota', '＋ New study set': '＋ Nuevo set de estudio',
+  'Calendar sync': 'Sincronización de calendario', 'Sync now': 'Sincronizar ahora', 'Connect': 'Conectar', 'Disconnect': 'Desconectar', 'Export calendar (.ics)': 'Exportar calendario (.ics)', 'Schedule': 'Programar', 'Connect iCloud Calendar': 'Conectar calendario de iCloud', 'Apple ID email': 'Correo del Apple ID', 'App-specific password': 'Contraseña específica de la app',
+  'Edit': 'Editar', 'Delete': 'Eliminar', 'Delete class': 'Eliminar clase', 'Delete note': 'Eliminar nota', 'Delete set': 'Eliminar set', 'Open': 'Abrir', 'Manage': 'Administrar', 'Apply': 'Aplicar', 'Preview': 'Vista previa', 'Remix': 'Remezclar', 'Export': 'Exportar', 'Reset': 'Restablecer',
+  'Title': 'Título', 'Class': 'Clase', 'Due': 'Entrega', 'Notes': 'Notas', 'Subtasks': 'Subtareas', 'Assignment link': 'Enlace de la tarea', 'Estimated minutes': 'Minutos estimados', 'Work starts': 'Inicio del trabajo', 'Work ends': 'Fin del trabajo',
+  'Class name': 'Nombre de la clase', 'Course code': 'Código del curso', 'Class link': 'Enlace de la clase', 'Credit hours': 'Créditos', 'Grade goal (%)': 'Meta de nota (%)', 'Current grade (%)': 'Nota actual (%)', 'Goal (%)': 'Meta (%)', 'Final weight (%)': 'Peso del final (%)', 'High-school rigor bonus': 'Bono de rigor (secundaria)', 'What if?': '¿Y si…?',
+  'Notebook': 'Cuaderno', 'Open notebook': 'Abrir cuaderno', 'Study this': 'Estudiar esto', 'Import text / PDF': 'Importar texto / PDF', 'Record audio': 'Grabar audio', 'Stop recording': 'Detener grabación', 'Export audio': 'Exportar audio', 'Transcribe locally': 'Transcribir localmente', 'Smart notes (AI)': 'Notas inteligentes (IA)', 'Ask about notes': 'Preguntar sobre las notas', 'AI study set': 'Set de estudio con IA',
+  'Previous page': 'Página anterior', 'Next page': 'Página siguiente', 'Clear page ink': 'Borrar tinta de la página', 'Export annotated page': 'Exportar página anotada', 'Export annotated PDF': 'Exportar PDF anotado', 'Pen color': 'Color del lápiz', 'Pen size': 'Grosor del lápiz',
+  'Study set': 'Set de estudio', 'Name': 'Nombre', 'Term : definition (one per line)': 'Término : definición (uno por línea)', 'Flashcards': 'Tarjetas', 'Quiz': 'Prueba', '← Previous': '← Anterior', 'Next question →': 'Siguiente pregunta →', 'Got it →': 'Entendido →',
+  'Display settings': 'Pantalla', 'Mode': 'Modo', 'Font family': 'Fuente', 'Custom CSS': 'CSS personalizado', 'Sidebar background': 'Fondo de la barra lateral', 'Dark mode begins': 'Inicio del modo oscuro', 'Dark mode ends': 'Fin del modo oscuro', 'Assignments per course card': 'Tareas por tarjeta de curso', 'Theme history': 'Historial de temas', 'Community themes': 'Temas de la comunidad', 'Search community themes': 'Buscar temas de la comunidad', 'Install & apply': 'Instalar y aplicar', 'Import theme': 'Importar tema', 'Create / remix a theme': 'Crear / remezclar un tema', 'Course card editor': 'Editor de tarjeta de curso', 'Custom card title': 'Título personalizado', 'Custom course code': 'Código personalizado', 'Color': 'Color', 'Brightness (%)': 'Brillo (%)', 'Blur (px)': 'Desenfoque (px)', 'Horizontal image position (%)': 'Posición horizontal de la imagen (%)', 'Vertical image position (%)': 'Posición vertical de la imagen (%)', 'Image zoom (%)': 'Zoom de la imagen (%)',
+  'Focus timer': 'Temporizador de enfoque', 'Start / Pause': 'Iniciar / Pausar', 'Focus minutes': 'Minutos de enfoque', 'Break minutes': 'Minutos de descanso', 'Break': 'Descanso', 'Study soundtrack': 'Música para estudiar', 'Play here': 'Reproducir aquí', 'A breathing break': 'Una pausa para respirar', 'Begin breathing': 'Empezar a respirar', 'Duration (seconds)': 'Duración (segundos)', 'Your motivation quote': 'Tu frase de motivación',
+  'Your data, your device.': 'Tus datos, tu dispositivo.', 'Export backup': 'Exportar copia de seguridad', 'Import backup': 'Importar copia de seguridad', 'Erase local data': 'Borrar datos locales', 'Assignment reminders': 'Recordatorios de tareas', 'Minutes before deadline': 'Minutos antes de la entrega', 'Sync across devices': 'Sincronizar entre dispositivos', 'Google Classroom': 'Google Classroom', 'Import from Google Classroom': 'Importar desde Google Classroom', 'AI through Ollama': 'IA con Ollama', 'Companion pairing code': 'Código de vinculación', 'Ollama model name': 'Modelo de Ollama', 'Check AI connection': 'Probar conexión de IA', 'Connected LMS sites': 'Sitios LMS conectados', 'Legal and support': 'Legal y soporte', 'Project coverage': 'Cobertura del proyecto', 'Language': 'Idioma', 'Save': 'Guardar', 'Open dashboard': 'Abrir panel', 'Enable on this site': 'Activar en este sitio', 'Agree and continue': 'Aceptar y continuar'
+};
+const dictionaries = {es};
+export const languages = [['auto', 'Automatic'], ['en', 'English'], ['es', 'Español']];
+export function language(setting, browser = globalThis.navigator?.language || 'en') {
+  const code = setting && setting !== 'auto' ? setting : String(browser).slice(0, 2).toLowerCase();
+  return dictionaries[code] ? code : 'en';
+}
+export function translate(root, lang) {
+  const dict = dictionaries[lang];
+  if (!dict || !root) return;
+  const walker = root.ownerDocument.createTreeWalker(root, 4);
+  for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+    const text = node.nodeValue.trim(), match = dict[text];
+    if (match && !node.parentElement?.closest('[data-no-translate],.note-body,.quote,.legal')) node.nodeValue = node.nodeValue.replace(text, match);
+  }
+}
+export function translateText(text, lang) { return dictionaries[lang]?.[text] || text; }
