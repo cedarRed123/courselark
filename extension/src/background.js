@@ -211,6 +211,10 @@ export async function collectLMS() {
       if (concluded || c.access_restricted_by_date || (effectiveEnd&&Date.parse(effectiveEnd)<=Date.now()) || (effectiveStart&&Date.parse(effectiveStart)>Date.now())) continue;
       active.push(c);
       try {
+        courses.at(-1).weighted = c.apply_assignment_group_weights === true;
+        courses.at(-1).groups = (await get(`/api/v1/courses/${c.id}/assignment_groups?per_page=100`)).filter(g => /^\d+$/.test(String(g.id))).map(g => ({id: g.id, name: String(g.name || 'Group'), weight: score(g.group_weight) ?? 0, dropLowest: Number(g.rules?.drop_lowest) || 0, dropHighest: Number(g.rules?.drop_highest) || 0, neverDrop: (g.rules?.never_drop || []).map(String)}));
+      } catch (e) { warnings.push(`${c.name || c.id} grade groups: ${e.message}`); }
+      try {
         const assignments = await get(`/api/v1/courses/${c.id}/assignments?include[]=submission&per_page=100`);
         for (const a of assignments) {
           if (!/^\d+$/.test(String(a.id))) continue;
