@@ -21,7 +21,7 @@ manifest['version'] = version
 out = root / 'dist'
 out.mkdir(exist_ok=True)
 archive = out / f'open-campus-{version}.zip'
-files = [source / name for name in ('index.html', 'popup.html', 'LICENSE', 'THIRD-PARTY.md')]
+files = [source / name for name in ('index.html', 'popup.html', 'LICENSE', 'THIRD-PARTY.md', 'PRIVACY.md', 'TERMS.md', 'README.md', 'FEATURE-COVERAGE.md')]
 files += sorted(p for folder in ('src', 'icons') for p in (source / folder).rglob('*') if p.is_file() and not p.name.startswith('.'))
 with zipfile.ZipFile(archive, 'w', compression=zipfile.ZIP_DEFLATED) as z:
     entries = {'manifest.json': (json.dumps(manifest, indent=2) + '\n').encode()}

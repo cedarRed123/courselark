@@ -4,6 +4,7 @@
   globalThis.__openCampusInjected = true;
   let state = (await chrome.storage.local.get('campus')).campus;
   if (!state?.settings?.lmsOrigins?.includes(location.origin)) return;
+  const {safeBackground,applyFont}=await import(chrome.runtime.getURL('src/theme-runtime.js'));
   const style = document.createElement('style'); style.id = 'open-campus-style'; document.head.append(style);
   const widgetStyle = document.createElement('style'); widgetStyle.id = 'open-campus-widgets-style'; document.head.append(widgetStyle);
   widgetStyle.textContent = `#open-campus-gpa,#open-campus-todo,#open-campus-gpa-dialog,#open-campus-task-dialog{box-sizing:border-box;color:#263641;font:14px/1.45 system-ui,-apple-system,sans-serif}#open-campus-gpa *,#open-campus-todo *,#open-campus-gpa-dialog *,#open-campus-task-dialog *{box-sizing:border-box}#open-campus-gpa button,#open-campus-todo button,#open-campus-gpa-dialog button,#open-campus-task-dialog button{cursor:pointer;font:inherit}#open-campus-gpa{background:#fff;border:1px solid #dfe4e8;border-radius:14px;padding:20px 22px;margin:18px 0 26px;max-width:650px;box-shadow:0 1px 3px #1d344012}#open-campus-gpa .oc-head,#open-campus-todo .oc-head{display:flex;align-items:center;justify-content:space-between;gap:10px}#open-campus-gpa h2,#open-campus-todo h2{font-size:17px;margin:0;font-weight:750;line-height:1.2}#open-campus-gpa .oc-head button,#open-campus-todo .oc-head button{border:1px solid #d9e0e4;background:#fff;color:#43535b;border-radius:9px;padding:5px 8px}#open-campus-gpa .oc-metrics{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:16px 0 8px}#open-campus-gpa .oc-metric{border:1px solid #dfe3e8;background:#fbfcfd;border-radius:13px;text-align:center;padding:14px 5px}#open-campus-gpa .oc-metric span{display:block;color:#64747b}#open-campus-gpa .oc-metric strong{display:block;font-size:40px;letter-spacing:-2px;line-height:1.15;margin:5px 0;color:#22343e}#open-campus-gpa .oc-foot{font-size:12px;color:#66777b;margin-top:11px}#open-campus-gpa .oc-foot button{border:0;background:transparent;color:#376a5b;text-decoration:underline;padding:0}#open-campus-todo{background:#fff;padding:12px 0 30px;margin:0 0 18px;max-width:360px}#open-campus-todo .oc-head{border-bottom:1px solid #e4e7eb;padding-bottom:10px}#open-campus-todo .oc-controls{display:flex;align-items:center;justify-content:space-between;gap:4px;margin:12px 0}#open-campus-todo select,#open-campus-todo .oc-controls button{border:1px solid #d6dde1;border-radius:8px;background:#fff;color:#35474e;padding:6px 7px}#open-campus-todo .oc-controls span{white-space:nowrap;font-size:12px;font-weight:650}#open-campus-todo .oc-progress{display:flex;align-items:center;gap:12px;padding:9px 0 14px}#open-campus-todo .oc-progress-ring{width:58px;height:58px;border-radius:50%;display:grid;place-items:center;background:conic-gradient(#76b49a var(--oc-progress),#e8eeed 0)}#open-campus-todo .oc-progress-ring span{display:grid;place-items:center;background:#fff;width:44px;height:44px;border-radius:50%;font-weight:800;font-size:13px}#open-campus-todo .oc-progress p{margin:0;color:#607078;font-size:12px}#open-campus-todo .oc-progress strong{display:block;color:#263641;font-size:16px}#open-campus-todo .oc-tabs{display:flex;background:#f1f3f4;border-radius:11px;padding:3px;gap:3px;margin-bottom:13px}#open-campus-todo .oc-tabs button{border:0;background:transparent;flex:1;border-radius:9px;padding:6px;color:#52636a}#open-campus-todo .oc-tabs button[aria-selected=true]{background:#fff;box-shadow:0 1px 4px #152a2830;color:#253e36;font-weight:750}#open-campus-todo .oc-section{margin:17px 0 8px;font-weight:800;font-size:12px;color:#43535b;letter-spacing:.03em}#open-campus-todo .oc-task{display:grid;grid-template-columns:5px 1fr 25px;border:1px solid #dce1e5;border-radius:13px;overflow:hidden;margin:8px 0;min-height:78px;box-shadow:0 1px 2px #0001}#open-campus-todo .oc-task .oc-strip{background:var(--oc-course,#577c6e)}#open-campus-todo .oc-task .oc-body{padding:8px 5px 8px 10px;min-width:0}#open-campus-todo .oc-task small{font-weight:750;color:var(--oc-course,#577c6e)}#open-campus-todo .oc-task a{display:block;color:#263641!important;font-size:14px;font-weight:700;line-height:1.25;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-decoration:none}#open-campus-todo .oc-task a:hover{text-decoration:underline}#open-campus-todo .oc-task .oc-due{display:flex;justify-content:space-between;gap:6px;font-size:11px;color:#6e7d82;margin-top:3px}#open-campus-todo .oc-task .oc-due span{white-space:nowrap}#open-campus-todo .oc-task button{align-self:start;border:2px solid var(--oc-course,#577c6e);border-radius:50%;width:19px;height:19px;background:#fff;margin:9px 6px 0 0;padding:0;line-height:14px;color:var(--oc-course,#577c6e);font-size:12px}#open-campus-todo .oc-task button[aria-pressed=true]{background:var(--oc-course,#577c6e);color:#fff}#open-campus-todo .oc-empty{padding:16px;border:1px dashed #cddad4;border-radius:12px;color:#64747b;text-align:center}#open-campus-todo .oc-add{border:1px solid #cedbd4;background:#f8fbf9;color:#315a49;border-radius:9px;padding:7px 10px;width:100%;margin-top:10px}#open-campus-gpa-dialog,#open-campus-task-dialog{width:min(460px,90vw);max-height:85vh;overflow:auto;border:1px solid #d4dfe0;border-radius:18px;background:#fff;color:#263641;padding:24px;box-shadow:0 20px 70px #0003}#open-campus-gpa-dialog::backdrop,#open-campus-task-dialog::backdrop{background:#1627208a}#open-campus-gpa-dialog h2,#open-campus-task-dialog h2{margin:0 0 14px;font-size:21px}#open-campus-gpa-dialog label,#open-campus-task-dialog label{display:block;margin:12px 0;font-weight:650}#open-campus-gpa-dialog input,#open-campus-gpa-dialog select,#open-campus-task-dialog input,#open-campus-task-dialog select{display:block;width:100%;border:1px solid #ccd6d8;border-radius:8px;padding:8px;margin-top:4px;color:#263641;background:#fff}#open-campus-gpa-dialog .oc-actions,#open-campus-task-dialog .oc-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:18px}#open-campus-gpa-dialog .oc-actions button,#open-campus-task-dialog .oc-actions button{border:1px solid #cbd8d1;border-radius:9px;background:#fff;padding:8px 12px}#open-campus-gpa-dialog .oc-actions button[type=submit],#open-campus-task-dialog .oc-actions button[type=submit]{background:#366c54;color:#fff;border-color:#366c54}#right-side-wrapper:has(#open-campus-todo) [data-testid=ToDoSidebar]{display:none!important}`;
@@ -117,6 +118,7 @@
     dialog.append(form);document.body.append(dialog);dialog.addEventListener('close',()=>dialog.remove(),{once:true});dialog.showModal();
   }
   async function renderGpa() {
+    if(state.settings.showGpa===false){document.querySelector('#open-campus-gpa')?.remove();return;}
     const box=document.querySelector('.ic-DashboardCard__box');if(!box)return;
     let widget=document.querySelector('#open-campus-gpa');if(!widget){widget=make('section');widget.id='open-campus-gpa';box.before(widget);}
     const data=await gpaData();if(!widget.isConnected)return;widget.replaceChildren();
@@ -148,6 +150,7 @@
     dialog.append(form);document.body.append(dialog);dialog.addEventListener('close',()=>dialog.remove(),{once:true});dialog.showModal();
   }
   function renderTodo() {
+    if(state.settings.showTodo===false){document.querySelector('#open-campus-todo')?.remove();return;}
     const side=document.querySelector('#right-side-wrapper')||document.querySelector('#right-side');if(!side)return;
     let widget=document.querySelector('#open-campus-todo');if(!widget){widget=make('section');widget.id='open-campus-todo';side.prepend(widget);}
     widget.replaceChildren();
@@ -169,7 +172,7 @@
   function apply() {
     const connected = state?.settings?.lmsOrigins?.includes(location.origin);
     if (!connected) {
-      observer?.disconnect(); style.remove(); widgetStyle.remove(); launch.remove();document.querySelector('#open-campus-nav-item')?.remove();
+      observer?.disconnect();document.querySelector('#open-campus-font')?.remove(); style.remove(); widgetStyle.remove(); launch.remove();document.querySelector('#open-campus-nav-item')?.remove();
       for (const card of document.querySelectorAll('.ic-DashboardCard')) restoreCard(card);
       document.querySelector('#open-campus-preview')?.remove();
       document.querySelector('#open-campus-gpa')?.remove();document.querySelector('#open-campus-todo')?.remove();document.querySelector('#open-campus-gpa-dialog')?.remove();document.querySelector('#open-campus-task-dialog')?.remove();document.querySelector('#open-campus-panel')?.remove();
@@ -184,8 +187,8 @@
     if (s.rotate && themes.length) theme = themes[Math.floor(Date.now() / 86400000) % themes.length];
     if (dark(s) && !theme.dark) theme = {...theme, ...defaults};
     const bg = color(theme.bg, '#f4f6f1'), surface = color(theme.surface, '#ffffff'), text = color(theme.text, '#253831'), accent = color(theme.accent, '#4c7663');
-    const font = ['system-ui', 'Georgia', 'Arial', 'Verdana', 'monospace'].includes(s.font) ? s.font : 'system-ui';
-    const sheet = `#dashboard{--oc-surface:${surface};--oc-text:${text};--oc-accent:${accent};--oc-bg:${bg};font-family:${font}}.ic-DashboardCard{background:${surface}!important;color:${text}!important;border-radius:14px!important;box-shadow:0 2px 9px #172c2530!important;overflow:hidden}.ic-DashboardCard__header_content,.ic-DashboardCard__action-container{background:${surface}!important}.ic-DashboardCard__header-title{color:${accent}!important}.ic-DashboardCard__header-subtitle,.ic-DashboardCard__header-term{color:${text}!important}${s.hideLogo ? '#header .ic-app-header__logomark-container{display:none!important}' : ''}${s.hideFeedback ? '.recent_feedback{display:none!important}' : ''}${s.compact ? '.ic-DashboardCard{width:220px!important}.ic-DashboardCard__header_image{height:85px!important}' : ''}${s.cardLinks ? '' : '.ic-DashboardCard__action-container{display:none!important}'}#dashboard .ic-DashboardCard__header_image{position:relative}.open-campus-grade{position:absolute;top:15px;left:15px;z-index:4;background:#fff;color:#263b33;padding:5px 10px;border-radius:24px;font:700 14px system-ui;box-shadow:0 2px 6px #0002}.open-campus-card-extra{padding:12px 18px 16px;border-top:1px solid #80938d33;font:13px/1.5 ${font};min-height:48px}.open-campus-card-extra h3{font:700 15px ${font};margin:0 0 8px}.open-campus-card-extra a{display:flex;justify-content:space-between;gap:9px;margin:9px 0;color:${text};text-decoration:none}.open-campus-card-extra a:hover{text-decoration:underline}.open-campus-card-extra button{font:inherit;cursor:pointer}.open-campus-note{white-space:pre-wrap;padding:0 18px;font-size:12px}`;
+    const font = applyFont(document,s.font);
+    const sheet = `#header.ic-app-header{background:${safeBackground(theme.sidebar)||surface}!important}#header .ic-app-header__menu-list-link{color:${color(theme.sidebarText,text)}!important}${s.disableOverlay?'.ic-DashboardCard__header_hero{opacity:0!important}':''}${s.fullWidth?'#dashboard{max-width:none!important}.ic-DashboardCard__box{max-width:none!important}':''}#dashboard{--oc-surface:${surface};--oc-text:${text};--oc-accent:${accent};--oc-bg:${bg};font-family:${font};background:${bg};color:${text}}#open-campus-gpa,#open-campus-todo{background:${surface};color:${text}}.ic-DashboardCard{background:${surface}!important;color:${text}!important;border-radius:14px!important;box-shadow:0 2px 9px #172c2530!important;overflow:hidden}.ic-DashboardCard__header_content,.ic-DashboardCard__action-container{background:${surface}!important}.ic-DashboardCard__header-title{color:${accent}!important}.ic-DashboardCard__header-subtitle,.ic-DashboardCard__header-term{color:${text}!important}${s.hideLogo ? '#header .ic-app-header__logomark-container{display:none!important}' : ''}${s.hideFeedback ? '.recent_feedback{display:none!important}' : ''}${s.compact ? '.ic-DashboardCard{width:220px!important}.ic-DashboardCard__header_image{height:85px!important}' : ''}${s.cardLinks ? '' : '.ic-DashboardCard__action-container{display:none!important}'}#dashboard .ic-DashboardCard__header_image{position:relative}.open-campus-grade{position:absolute;top:15px;left:15px;z-index:4;background:#fff;color:#263b33;padding:5px 10px;border-radius:24px;font:700 14px system-ui;box-shadow:0 2px 6px #0002}.open-campus-card-extra{padding:12px 18px 16px;border-top:1px solid #80938d33;font:13px/1.5 ${font};min-height:48px}.open-campus-card-extra h3{font:700 15px ${font};margin:0 0 8px}.open-campus-card-extra a{display:flex;justify-content:space-between;gap:9px;margin:9px 0;color:${text};text-decoration:none}.open-campus-card-extra a:hover{text-decoration:underline}.open-campus-card-extra button{font:inherit;cursor:pointer}.open-campus-note{white-space:pre-wrap;padding:0 18px;font-size:12px}`;
     if (style.textContent !== sheet) style.textContent = sheet;
     const palette = Array.isArray(theme.palette) && theme.palette.length ? theme.palette.map(c => color(c, accent)) : [accent];
     document.querySelectorAll('.ic-DashboardCard').forEach((card, index) => {
@@ -203,7 +206,7 @@
       const cardColor = color(over.color, palette[index % palette.length]);
       if (header) {
         if (!original.headerStyle?.includes('background-image') || over.color || over.image) header.style.setProperty('background-color', cardColor, 'important');
-        const image = safeUrl(over.image); if (over.image && image) { header.style.setProperty('background-image', `url(${JSON.stringify(image)})`, 'important'); header.style.backgroundSize = 'cover'; header.style.backgroundPosition = 'center'; }
+        const hasThemeImages=Array.isArray(theme.images)&&theme.images.length>0;const themeImage=hasThemeImages?theme.images[index%theme.images.length]:'';const chosenImage=over.image||themeImage;const image = safeUrl(chosenImage); if (chosenImage && image) { header.style.setProperty('background-image', `url(${JSON.stringify(image)})`, 'important'); const zoom=finite(over.imageZoom,100,100,300);header.style.backgroundSize = zoom===100?'cover':`${zoom}% auto`;header.style.backgroundPosition = `${finite(over.imageX,50,0,100)}% ${finite(over.imageY,50,0,100)}%`; }else if(hasThemeImages||!original.headerStyle?.includes('background-image')){header.style.backgroundImage=s.gradient?`linear-gradient(135deg,${cardColor},${accent})`:'none';}
         if (over.brightness != null || over.blur != null) header.style.filter = `brightness(${finite(over.brightness, 100, 0, 200)}%) blur(${finite(over.blur, 0, 0, 40)}px)`;
       }
       let badge = card.querySelector('.open-campus-grade');
@@ -214,27 +217,27 @@
       } else badge?.remove();
       let noteEl = card.querySelector('.open-campus-note');
       const note = course && (state.notes || []).find(n => n.courseId === course.id);
-      if (note) {
+      if (note && s.showNotes!==false) {
         if (!noteEl) { noteEl = make('p', '', 'open-campus-note'); card.append(noteEl); }
         const value = String(note.body || '').slice(0, 180); if (noteEl.textContent !== value) noteEl.textContent = value;
       } else noteEl?.remove();
       card.querySelector('.open-campus-card-extra')?.remove();
       const extra = make('div', null, 'open-campus-card-extra');
       const now = Date.now(), horizon = now + 14 * 86400000;
-      const tasks = course && (state.tasks || []).filter(t => t.courseId === course.id && !t.done && Date.parse(t.due) >= now - 7 * 86400000 && Date.parse(t.due) <= horizon).sort((a, b) => Date.parse(a.due) - Date.parse(b.due)).slice(0, 3) || [];
-      extra.append(make('h3', 'Due'));
-      if (!tasks.length) extra.append(make('span', 'Nothing upcoming'));
-      for (const task of tasks) {
+      const tasks = course && (state.tasks || []).filter(t => t.courseId === course.id && !t.done && Date.parse(t.due) >= now - 7 * 86400000 && Date.parse(t.due) <= horizon).sort((a, b) => Date.parse(a.due) - Date.parse(b.due)).slice(0, finite(s.assignmentCount,3,1,20)) || [];
+      if(s.showAssignments!==false)extra.append(make('h3', 'Due'));
+      if (s.showAssignments!==false && !tasks.length) extra.append(make('span', 'Nothing upcoming'));
+      for (const task of s.showAssignments===false?[]:tasks) {
         const row = make('div'), url = safeUrl(task.url), a = make(url ? 'a' : 'span');
         a.append(make('span', task.title), make('time', new Date(task.due).toLocaleDateString(undefined, {month:'short',day:'numeric'}))); if (url) a.href = url;
         const show = make('button', '↗'); show.type = 'button'; show.setAttribute('aria-label', 'Preview ' + task.title); show.title = 'Preview assignment'; show.addEventListener('click', () => preview(task, {surface, text}));
-        row.style.cssText='display:flex;align-items:center;gap:5px'; row.append(a, show); extra.append(row);
+        row.style.cssText='display:flex;align-items:center;gap:5px'; row.append(a);if(s.assignmentPreview!==false)row.append(show);extra.append(row);
       }
       for (const custom of Array.isArray(over.links) ? over.links : []) {
         const url = safeUrl(custom.url); if (!url) continue;
-        const a = make('a', String(custom.name || 'Link')); a.href = url; a.target = '_blank'; a.rel = 'noopener noreferrer'; extra.append(a);
+        const a = make('a', String(custom.label || custom.name || 'Link')); a.href = url; a.target = '_blank'; a.rel = 'noopener noreferrer'; extra.append(a);
       }
-      card.append(extra);
+      if(extra.childNodes.length)card.append(extra);
     });
     if (document.querySelector('#dashboard')) {renderGpa().catch(error=>{const widget=document.querySelector('#open-campus-gpa');if(widget)widget.textContent='GPA overview is unavailable. Refresh your Canvas import.';});renderTodo();}
   }

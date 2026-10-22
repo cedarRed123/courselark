@@ -1,6 +1,7 @@
 # Open Campus Privacy Policy
 
-**Effective October 17, 2026**  
+**Effective October 21, 2026**
+
 **Operator:** Noah Fishman  
 **Contact:** ntfishman@gmail.com
 
@@ -14,6 +15,8 @@ You may enter tasks, notes, study cards, grade adjustments, course details, them
 
 ## Optional transfers you control
 
+- **Fonts:** Selecting or installing a Google Fonts family loads its stylesheet from fonts.googleapis.com and font files from fonts.gstatic.com. Google receives normal network request information. Installed/system fonts do not require these requests.
+- **Community themes:** Opening Community themes requests optional access to `api.bettercampus.com`. Browsing, searching, paging and previewing contact that public service with the search text, page number or theme code. Requests omit account credentials and referrers. The service receives ordinary network information such as your IP address. Open Campus does not send notes, tasks, grades or LMS credentials to it. Installing an imported theme can load HTTPS images from their original hosts. Theme files and settings are saved locally.
 - **Calendars:** Choosing Google or Outlook opens that provider with the task title and time in the URL. Task notes are excluded. Calendar and JSON backup exports save copies where you choose. Backups contain local records but exclude attached file blobs.
 - **Speech and audio:** Audio recording is saved locally. Browser speech recognition is off by default. If you check its option before recording, audio may be processed by your browser provider under its own policy. The separate **Transcribe locally** action sends a recording to a service you run at `127.0.0.1:4317`, which can use a local whisper.cpp model.
 - **Local AI:** If you choose Smart notes, AI study set, or Ask about notes, the selected notes and prompt go to the companion service you run at `127.0.0.1:4317` and its configured local Ollama model. Open Campus does not configure a remote AI provider for you.

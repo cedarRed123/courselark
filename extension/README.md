@@ -55,7 +55,7 @@ The Canvas GPA overview defaults to a whole-letter scale (A=4, B=3, C=2, D=1, F=
 
 Canvas current scores come from its API. Assignment what-ifs use a points-based model, not automatic dropped-score/assignment-group grading policy. Canvas imports require your existing authorized login, honor pagination and access errors, distinguish accounts/sites, and preserve local scheduling and notes. They never submit coursework or modify official grades. Imported data is a snapshot. A school may disable/restrict an API.
 
-PDF extraction works for searchable text; image scans need OCR that is not included. PPTX/DOCX import extracts text, not every visual/embedded object. PDF ink is saved per page and exported as an image, not rewritten into a full PDF. Theme sharing is via JSON; there is no cloud community/friends backend. The custom soundtrack opens a provider's playlist page and does not bypass that provider's access rules.
+PDF extraction works for searchable text; image scans need OCR that is not included. PPTX/DOCX import extracts text, not every visual/embedded object. PDF ink is saved per page and exported as an image, not rewritten into a full PDF. Theme sharing supports JSON files and read-only browsing/import from BetterCampus’s public community. Friends, publishing and reactions are not implemented. The custom soundtrack opens a provider's playlist page and does not bypass that provider's access rules.
 
 ## Verify
 
@@ -82,3 +82,13 @@ See [PRIVACY.md](PRIVACY.md). Canvas import is read-only and requires an explici
 ## License
 
 Original code/assets: MIT, see LICENSE. Bundled PDF.js and fflate retain their separate licenses in `src/vendor` and [THIRD-PARTY.md](THIRD-PARTY.md). Open Campus is independent of BetterCampus and LMS vendors.
+
+## BetterCampus themes and display controls
+
+In **Appearance → Community themes**, grant optional access to `api.bettercampus.com` to browse, search and page through public themes. Preview a theme before installing, or paste its public community link/code. The preview identifies unsupported values. Downloads use public GET requests without account credentials; Open Campus does not send coursework or write to the community service. Availability depends on that third-party API.
+
+**Import theme** accepts JSON files; **Paste theme JSON** accepts copied exports. Native Open Campus themes and BetterCanvas/BetterCampus export objects (including community `exports` wrappers) are supported. Colors, HTTPS card images, supported fonts, schedules and mapped display toggles convert. **BetterCampus export** writes the older/current observed export keys; applying that output in the current BetterCampus extension remains unverified. Personal tasks, notes and site permissions are never included. Attribution remains in native theme files; the BetterCampus export format does not have a verified attribution field.
+
+Display controls now independently toggle Canvas GPA, to-do, course notes, assignments, preview buttons, image overlays, full-width layout, and workspace companion/quote. Set 1–20 assignments per card. Theme remixes retain images and supported settings; the editor allows card-image URLs and solid sidebar colors. History restores the previous theme and display snapshot.
+
+Remote fonts, sidebar image/gradient backgrounds, arbitrary CSS, per-course legacy customization maps and unsupported options are not converted. Import previews report those limits. Existing per-course image overrides take precedence over theme images. Full feature parity, cross-device accounts, friends and bidirectional calendar sync remain unfinished; see FEATURE-COVERAGE.md.

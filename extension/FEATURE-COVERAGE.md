@@ -1,4 +1,4 @@
-# Feature coverage — October 14, 2026
+# Feature coverage — updated October 21, 2026
 
 **This is not complete production parity with BetterCampus 9.8.15.** Implemented features have no paywalls. The repository analyzed with REA is version 5.12.6; current additional requirements come from the public website/store. Original source/assets have not been copied into this implementation.
 
@@ -6,10 +6,10 @@
 | --- | --- | --- |
 | Dark mode, custom colors | Original palettes, editable theme colors | Implemented; representative Canvas fixture tested, institution layouts unverified |
 | Schedule/device dark mode | Time windows and system preference | Implemented and tested |
-| Themes, builder, remixes | Five original presets; unlimited local themes/remixes; JSON import/export | Implemented; does not include BetterCampus's theme library |
+| Themes, builder, remixes | Five original presets; unlimited local themes/remixes; JSON import/export | Implemented with public BetterCampus community browsing/search/pagination/import and native/BetterCampus JSON exchange; conversion limits are shown before installation |
 | Auto-rotate and history | Daily rotation; unrestricted local history | Implemented; daily rotation does not add history snapshots |
 | Image editor | Per-card HTTPS background, brightness, blur | Implemented; no crop/advanced bitmap editor |
-| Community themes, reactions, submissions | Theme files shared manually | Hosted community, likes/comments/review not implemented |
+| Community themes, reactions, submissions | Public BetterCampus catalog and theme-file exchange | Browsing/import implemented; publishing, likes/comments/review not implemented |
 | Fonts, gradients, density/sidebar controls | Five installed font families; gradients, compact cards, hide logo/feedback, show links/grades | Implemented subset; custom arbitrary font loading, tab icons and custom CSS not implemented |
 | Course customization | Colors/images/names/codes/visibility/custom links; existing Canvas images preserved unless overridden | Implemented; fixture verifies injection/restoration |
 | Assignment list/deadlines | Canvas paginated same-origin API import, search/filter, completion; inline Canvas right sidebar with timeframe, groups, progress and local add task | Implemented and synthetic integration tested; refresh is manual |
@@ -50,3 +50,11 @@
 | Monetization | No billing, quotas for upsell, subscription gates, BetterCampus entitlement requests | Implemented features all available free; hardware/provider limits still apply |
 
 Tests establish the specified calculations, fixtures and original UI behavior; they do not establish identical behavior to the current production product. Remaining external requirements include chosen cloud hosting/identity, calendar OAuth app registrations, live LMS accounts/adapters, and installed local AI/transcription models. See README and REA-FINDINGS for evidence and setup.
+
+
+October 21 update: independent GPA/to-do/notes/assignment/preview toggles, assignment count, full-width layout, overlay removal and workspace companion/quote controls are implemented. Theme images rotate across course cards; manual course overrides win. Supported theme settings survive native/legacy round trips. Remote fonts and complex sidebar backgrounds still fall back with warnings. Public catalog GETs, search and page 2 were checked live; the current BetterCampus extension’s import UI was not tested. This does not establish complete feature parity.
+
+
+Active parity goal: all feature families above except friends remain in scope. Google, Microsoft/Outlook and Apple Calendar are required. No developer-operated server, backend deployment or developer data collection is permitted. OAuth/calendar and optional cross-device storage must connect directly to user-selected providers. Provider registrations and real-account tests remain external requirements, not completed features.
+
+Theme rendering milestone: shared validated background grammar now preserves linear/radial gradients and HTTPS sidebar images, Google Fonts family names load through a stylesheet, and card image position/zoom controls are implemented. Browser tests verify rendered background syntax and image positioning; actual school CSP/font availability still needs live verification. Arbitrary custom CSS remains outstanding.

@@ -42,3 +42,12 @@ Start `node server.mjs` in another terminal, then run `node tests/extension-smok
 ## 0.3.1 release security pass (October 15, 2026)
 
 After the original 0.3.0 verification, privacy and HTML-safety fixes were applied. Unit tests: 42/42. Browser smoke and actual unpacked-extension smoke both passed. `npm audit --omit=dev --audit-level=moderate` found 0 known production dependency vulnerabilities. See `SECURITY-REVIEW.md` for scope, findings, and residual data boundaries.
+
+
+## Theme compatibility and controls — October 21, 2026
+
+- 47 Node unit/integration tests passed, including export round trips, explicit false settings, safe image handling, unknown-field omission and public API validation.
+- Browser checks passed for community search/pagination, preview/install, creator attribution, persistence, malformed-import rejection, workspace visibility and Canvas widget removal/restoration.
+- Existing UI CRUD, four games, Canvas integration and real unpacked extension/panel tests passed. The new module loads under extension CSP.
+- Live unauthenticated GETs verified a 20-item catalog, search for Sea Foam, page 2, and conversion of Sea Foam’s 11 image URLs. No community data was modified or bundled.
+- The actual optional-host consent prompt, importing an exported file into the current BetterCampus extension, and every live school layout remain unverified. Remote fonts and sidebar backgrounds are disclosed conversion gaps; this is not complete product parity.
