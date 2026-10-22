@@ -1,9 +1,10 @@
 import {read, write} from './store.js';
-import {mergeLMS, gpaSummary} from './core.js';
+import {mergeLMS, gpaSummary, legalVersion} from './core.js';
 
 const own = sender => sender.id === chrome.runtime.id && sender.url?.startsWith(chrome.runtime.getURL(''));
 let registrationQueue = Promise.resolve();
 let alarmRunning = false;
+const autoSyncMinutes = 30;
 
 export function normalizeSite(value) {
   const url = new URL(value);
@@ -15,7 +16,7 @@ export function normalizeSite(value) {
 export function registerSites() {
   const run = registrationQueue.then(async () => {
     const state = await read();
-    const origins = [...new Set((state.settings.lmsOrigins || []).map(normalizeSite))];
+    const origins = state.legalAcceptance?.version===legalVersion ? [...new Set((state.settings.lmsOrigins || []).map(normalizeSite))] : [];
     const allowed = [];
     for (const origin of origins) if (await chrome.permissions.contains({origins: [origin + '/*']})) allowed.push(origin + '/*');
     const existing = await chrome.scripting.getRegisteredContentScripts({ids: ['campus-sites']});
@@ -36,12 +37,12 @@ chrome.runtime.onStartup.addListener(() => initialize().catch(console.error));
 chrome.permissions.onAdded.addListener(() => registerSites().catch(console.error));
 chrome.permissions.onRemoved.addListener(() => registerSites().catch(console.error));
 chrome.storage.onChanged.addListener((changes, area) => {
-  if (area === 'local' && changes.campus && JSON.stringify(changes.campus.oldValue?.settings?.lmsOrigins) !== JSON.stringify(changes.campus.newValue?.settings?.lmsOrigins)) registerSites().catch(console.error);
+  if (area === 'local' && changes.campus && (JSON.stringify(changes.campus.oldValue?.settings?.lmsOrigins) !== JSON.stringify(changes.campus.newValue?.settings?.lmsOrigins) || changes.campus.oldValue?.legalAcceptance?.version !== changes.campus.newValue?.legalAcceptance?.version)) registerSites().catch(console.error);
 });
 async function connectedSender(sender) {
   if (sender.id !== chrome.runtime.id || !sender.tab || !sender.url) return false;
   const origin = new URL(sender.url).origin;
-  return (await read()).settings.lmsOrigins.includes(origin) && await chrome.permissions.contains({origins: [origin + '/*']});
+  const state=await read();return state.legalAcceptance?.version===legalVersion && state.settings.lmsOrigins.includes(origin) && await chrome.permissions.contains({origins: [origin + '/*']});
 }
 export async function handleMessage(message, sender) {
   if (message.type === 'GPA_SUMMARY') {
@@ -59,15 +60,23 @@ export async function handleMessage(message, sender) {
     const tab=sender.tab&&!own(sender)?sender.tab:(await chrome.tabs.query({active:true,currentWindow:true}))[0];
     if(!tab?.id||!tab.url)throw Error('Open your connected Canvas tab first.');
     const origin=new URL(tab.url).origin;
-    if(!(await read()).settings.lmsOrigins.includes(origin)||!(await chrome.permissions.contains({origins:[origin+'/*']})))throw Error('Connect this Canvas tab in Open Campus first.');
+    if(!(await read()).settings.lmsOrigins.includes(origin)||!(await chrome.permissions.contains({origins:[origin+'/*']})))throw Error('Connect this Canvas tab in CourseLark first.');
     const response=await chrome.tabs.sendMessage(tab.id,{type:'OPEN_PANEL',page:message.page||'dashboard'});
-    if(!response?.ok)throw Error('Reload this Canvas tab, then try opening Open Campus again.');
+    if(!response?.ok)throw Error('Reload this Canvas tab, then try opening CourseLark again.');
     return {ok:true};
   }
-  if (!own(sender)) throw Error('This action is available only from the Open Campus extension.');
+  if (message.type === 'AUTO_SYNC') {
+    // Connected top-level LMS tabs refresh their own import; repeat visits are throttled.
+    if (!(await connectedSender(sender)) || sender.frameId || !sender.tab?.url || new URL(sender.tab.url).origin !== new URL(sender.url).origin) throw Error('Automatic import is available only on your connected LMS tab.');
+    const state = await read(), origin = new URL(sender.url).origin, last = state.settings.lastImport;
+    if (last?.origin === origin && Date.now() - last.at < autoSyncMinutes * 60000) return {ok: true, skipped: true};
+    return importTab(sender.tab, state);
+  }
+  if (!own(sender)) throw Error('This action is available only from the CourseLark extension.');
   if (message.type === 'REGISTER') return {ok: true, connected: await registerSites()};
   if (message.type !== 'IMPORT_LMS') throw Error('Unknown operation.');
   const state = await read();
+  if(state.legalAcceptance?.version!==legalVersion)throw Error('Review and accept the Terms of Use before importing LMS data.');
   const tabs = await chrome.tabs.query({active: true, currentWindow: true});
   let tab = tabs[0];
   if (tab?.url?.startsWith(chrome.runtime.getURL(''))) {
@@ -75,11 +84,14 @@ export async function handleMessage(message, sender) {
     const candidates = state.settings.lmsOrigins.length ? await chrome.tabs.query({url: state.settings.lmsOrigins.map(o => o + '/*')}) : [];
     tab = candidates.sort((a, b) => (b.lastAccessed || 0) - (a.lastAccessed || 0))[0];
   }
+  return importTab(tab, state);
+}
+async function importTab(tab, state) {
   if (!tab?.id || !tab.url) throw Error('Open your signed-in LMS tab first.');
   const origin = new URL(tab.url).origin;
   normalizeSite(origin);
-  if (!state.settings.lmsOrigins.includes(origin)) throw Error('Connect this LMS site first.');
-  if (!(await chrome.permissions.contains({origins: [origin + '/*']}))) throw Error('Site permission was removed. Reconnect your LMS site.');
+  if (!state.settings.lmsOrigins.includes(origin)) throw Error('Enable this LMS site in the CourseLark popup first.');
+  if (!(await chrome.permissions.contains({origins: [origin + '/*']}))) throw Error('Site permission was removed. Enable your LMS site again.');
   const executions = await chrome.scripting.executeScript({target: {tabId: tab.id}, func: collectLMS});
   const result = executions[0]?.result;
   if (!result || result.error) throw Error(result?.error || 'Canvas import did not return data. Reload the LMS tab and try again.');

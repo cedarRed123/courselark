@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
-  "name": "Open Campus",
-  "version": "0.3.2",
+  "name": "CourseLark",
+  "version": "0.4.0",
   "description": "Local-first themes, assignments, GPA, notes, study sets and planning. No account or subscription.",
   "permissions": [
     "storage",
@@ -22,7 +22,7 @@
   },
   "action": {
     "default_popup": "popup.html",
-    "default_title": "Open Campus"
+    "default_title": "CourseLark"
   },
   "options_page": "index.html",
   "web_accessible_resources": [
@@ -35,7 +35,9 @@
         "src/store.js",
         "src/games.js",
         "src/vendor/*",
-        "src/vendor/standard_fonts/*"
+        "src/vendor/standard_fonts/*",
+        "src/theme-compat.js",
+        "src/theme-runtime.js"
       ],
       "matches": [
         "https://*/*",
@@ -48,6 +50,6 @@
     "128": "icons/icon.png"
   },
   "content_security_policy": {
-    "extension_pages": "script-src 'self'; object-src 'self'; connect-src 'self' http://localhost:11434 http://127.0.0.1:11434 http://127.0.0.1:4317 http://localhost:4317; img-src 'self' data: https:; media-src 'self' blob:; worker-src 'self';"
+    "extension_pages": "script-src 'self'; object-src 'self'; connect-src 'self' https://api.bettercampus.com http://localhost:11434 http://127.0.0.1:11434 http://127.0.0.1:4317 http://localhost:4317; img-src 'self' data: https:; media-src 'self' blob:; worker-src 'self';"
   }
 }

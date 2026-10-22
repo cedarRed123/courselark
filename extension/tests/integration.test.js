@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {initial} from '../src/core.js';
+import {initial,legalVersion} from '../src/core.js';
 
 const origin = 'https://school.instructure.com';
 let stored = {}, registrations = [], granted = new Set(), fetchCalls = [], notificationCalls = [], panelMessages = [];
@@ -25,7 +25,7 @@ globalThis.chrome = {
 let background = await import('../src/background.js');
 const own = {id: 'test-extension', url: 'chrome-extension://test-extension/index.html'};
 function reset() {
-  stored = {campus: initial()}; stored.campus.settings.lmsOrigins = [origin];
+  stored = {campus: initial()}; stored.campus.legalAcceptance={version:legalVersion,acceptedAt:'2026-10-18T00:00:00.000Z'}; stored.campus.settings.lmsOrigins = [origin];
   registrations = [{id: 'unrelated', matches: ['https://other.test/*']}];
   granted = new Set([origin + '/*']); fetchCalls = []; notificationCalls = []; panelMessages = [];
   globalThis.location = new URL(origin + '/');
@@ -58,6 +58,13 @@ test('register only permitted origins, preserve unrelated registrations, remove 
   assert.ok(registrations.some(r => r.id === 'unrelated'));
   granted.clear(); assert.equal(await background.registerSites(), 0);
   assert.equal(registrations.length, 1);
+});
+
+test('unaccepted terms prevent LMS registration and import', async () => {
+  reset(); stored.campus.legalAcceptance=null;
+  assert.equal(await background.registerSites(),0);
+  await assert.rejects(background.handleMessage({type:'IMPORT_LMS'},own),/accept the Terms/);
+  assert.equal(registrations.length,1);
 });
 
 test('reject unsafe or overly broad site origins', () => {
@@ -117,6 +124,18 @@ test('content pages open the workspace inside Canvas but cannot invoke privilege
   assert.deepEqual(panelMessages[0],{id:1,message:{type:'OPEN_PANEL',page:'dashboard'}});
   await assert.rejects(background.handleMessage({type: 'IMPORT_LMS'}, content), /extension/);
   await assert.rejects(background.handleMessage({type: 'OPEN'}, {id: 'foreign', url: origin, tab: {id: 1}}), /extension/);
+});
+
+test('connected tabs auto-import their own origin, throttle repeat visits, and reject frames or unconnected sites', async () => {
+  reset(); canvasFixture(); const content = {id: 'test-extension', url: origin + '/courses', tab: {id: 9, url: origin + '/courses'}, frameId: 0};
+  let target; chrome.scripting.executeScript = async options => {target = options.target.tabId; return [{result: await background.collectLMS()}];};
+  const first = await background.handleMessage({type: 'AUTO_SYNC'}, content);
+  assert.equal(first.ok, true); assert.equal(target, 9); assert.equal(stored.campus.tasks.length, 2);
+  target = null; assert.equal((await background.handleMessage({type: 'AUTO_SYNC'}, content)).skipped, true); assert.equal(target, null);
+  stored.campus.settings.lastImport.at -= 31 * 60000; assert.equal((await background.handleMessage({type: 'AUTO_SYNC'}, content)).skipped, undefined); assert.equal(target, 9);
+  await assert.rejects(background.handleMessage({type: 'AUTO_SYNC'}, {...content, frameId: 3}), /connected LMS tab/);
+  stored.campus.settings.lmsOrigins = []; await assert.rejects(background.handleMessage({type: 'AUTO_SYNC'}, content), /connected LMS tab/);
+  reset(); stored.campus.legalAcceptance = null; await assert.rejects(background.handleMessage({type: 'AUTO_SYNC'}, content), /connected LMS tab/);
 });
 
 test('workspace import selects most recent connected school tab', async () => {

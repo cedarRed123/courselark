@@ -1,18 +1,18 @@
-# Open Campus
+# CourseLark
 
-A free, open-source Chrome/Edge MV3 campus companion. Implemented features have **no Open Campus subscription, account requirement, paywall, paid unlock, monthly counters, or remote entitlement checks**. Open Campus is an independent, local-first alternative to BetterCampus, with original code and assets and no BetterCampus affiliation or endorsement. It is **not a complete duplicate of BetterCampus 9.8.15**. See [FEATURE-COVERAGE.md](FEATURE-COVERAGE.md) and [REA-FINDINGS.md](REA-FINDINGS.md) for verified scope and remaining gaps.
+A free, open-source Chrome/Edge MV3 campus companion. Implemented features have **no CourseLark subscription, account requirement, paywall, paid unlock, monthly counters, or remote entitlement checks**. CourseLark is an independent, local-first alternative to BetterCampus, with original code and assets and no BetterCampus affiliation or endorsement. It is **not a complete duplicate of BetterCampus 9.8.15**. See [FEATURE-COVERAGE.md](FEATURE-COVERAGE.md) and [REA-FINDINGS.md](REA-FINDINGS.md) for verified scope and remaining gaps.
 
 ## Install the extension
 
-1. Extract `open-campus.zip`, keeping its directory structure.
+1. Extract the CourseLark extension ZIP, keeping its directory structure.
 2. Open `brave://extensions`, `chrome://extensions`, or `edge://extensions` and enable **Developer mode**.
-3. Choose **Load unpacked**, then select the `open-campus` folder containing `manifest.json`.
-4. Pin Open Campus, then open your school's signed-in Canvas tab.
-5. Click the extension → **Connect this LMS site** and grant access to that exact site.
-6. Click **Import from this tab**. Reload the LMS tab if needed. Import again when assignments/grades change; imports are read-only.
-7. Click **✦ Open Campus** in Canvas navigation, or the extension icon → **Open dashboard**, to open the workspace in a panel over Canvas.
+3. Choose **Load unpacked**, then select the extracted folder containing `manifest.json`.
+4. Pin CourseLark, then open your school's signed-in Canvas tab.
+5. Click the extension → **Enable on this site** and grant access to that exact site. CourseLark imports right away.
+6. Later visits to that site import automatically, at most every 30 minutes. Imports are read-only.
+7. Click **✦ CourseLark** in Canvas navigation, or the extension icon → **Open dashboard**, to open the workspace in a panel over Canvas.
 
-If an older unpacked Open Campus is already loaded from this folder, use **Reload** on its extension card, then reload the Canvas tab. Click **✦ Open Campus** in Canvas navigation to open a large panel within that tab. The panel closes with its × button or Escape. **Open grade planner** in the GPA widget opens directly to Grades & GPA in the same panel. The Canvas dashboard also places GPA above course cards and a week-based to-do list in the right sidebar. The GPA settings let you choose whole-letter or plus/minus grading, term, course credits, exclusions, prior GPA, and a term goal. Imported assignment completion changes only local Open Campus tracking; it never submits Canvas work.
+If an older unpacked CourseLark is already loaded from this folder, use **Reload** on its extension card, then reload the Canvas tab. Click **✦ CourseLark** in Canvas navigation to open a large panel within that tab. The panel closes with its × button or Escape. **Open grade planner** in the GPA widget opens directly to Grades & GPA in the same panel. The Canvas dashboard also places GPA above course cards and a week-based to-do list in the right sidebar. The GPA settings let you choose whole-letter or plus/minus grading, term, course credits, exclusions, prior GPA, and a term goal. Imported assignment completion changes only local CourseLark tracking; it never submits Canvas work.
 
 There is no build step and no npm installation needed to use the extension. It only decorates connected sites. Tasks, courses, notes, study sets and themes persist in extension storage. Attached files/audio and PDF ink persist in IndexedDB. Removing the extension removes its storage, so export backups and attachment files first.
 
@@ -27,14 +27,15 @@ There is no build step and no npm installation needed to use the extension. It o
 - Use custom focus/break timers, breathing duration, playlist links, agenda and motivation quote.
 - Export/import JSON backups, theme files and ICS calendars. Compose Google/Outlook calendar events (task title and time are included in provider URLs; private notes are excluded). These are exports/event links, not continuous calendar sync.
 
-## Local AI and offline transcription (optional)
+## AI through Ollama and offline transcription (optional)
 
-The core extension works without a server. AI features require a separately installed local model engine; this project does not include model weights or a paid API.
+The core extension works without a server. AI features require a separately installed Ollama service; this project does not include model weights or a paid API. Ollama may use cloud models, and CourseLark does not verify local-only mode.
 
 1. Install/run [Ollama](https://docs.ollama.com/), then download a model appropriate to your computer, for example `ollama pull qwen3:4b`.
-2. In the `open-campus` folder run `node server.mjs` with Node.js 24+. It binds only to `127.0.0.1:4317` and sends AI requests only to local Ollama on port 11434.
-3. In Settings, enter the installed model name. Choose **Check local AI**.
-4. In a notebook, **Smart notes**, **AI study set**, and **Ask about notes** use the local model. Generated answers/cards need review against your source material.
+2. In the extracted extension folder run `node server.mjs` with Node.js 24+. It binds to `127.0.0.1:4317` and forwards AI requests to Ollama on port 11434. Ollama's own configuration determines where the model runs.
+3. Copy the 64-character pairing code printed in the companion terminal into **Settings → Companion pairing code** in each browser profile where you use AI or local transcription. The code changes each time the companion starts. To keep one code across restarts, set `CAMPUS_PAIRING_TOKEN` to your own random 64-character hexadecimal value in your local shell environment. Keep it private; do not commit it, send it to support, or include it in a screenshot. JSON backups do not include the saved browser pairing code.
+4. In Settings, enter the model name. Choose **Check AI connection**. To keep processing on-device, use a downloaded model and [disable Ollama cloud features](https://docs.ollama.com/faq#how-do-i-disable-ollamas-cloud-features).
+5. In a notebook, **Smart notes**, **AI study set**, and **Ask about notes** send selected notes and prompts to Ollama after a confirmation. Generated answers/cards need review against your source material.
 
 For offline audio transcription, install [whisper.cpp](https://github.com/ggml-org/whisper.cpp), obtain a compatible model, and install ffmpeg. Start the companion with paths to your executables/model:
 
@@ -45,7 +46,7 @@ FFMPEG_COMMAND=/absolute/path/to/ffmpeg \
 node server.mjs
 ```
 
-Open saved audio in a notebook → **Transcribe locally**. Temporary audio is deleted after processing. Without the engine/model the UI reports the missing configuration. Real model generation and real microphone/Whisper transcription have not been verified on this machine.
+Open saved audio in a notebook → **Transcribe locally**. The companion normally deletes temporary audio and transcript files after processing; an abrupt shutdown may leave them behind. Without the engine/model the UI reports the missing configuration. Real model generation and real microphone/Whisper transcription have not been verified on this machine.
 
 The companion also serves a standalone dashboard at `http://127.0.0.1:4317`. Its browser storage is separate from extension storage; transfer ordinary data via JSON backup. LMS import/reminders require the installed extension. The transport bounds requests at 128 MB (16 MB for AI JSON) to prevent resource exhaustion, not to sell an upgrade. Local disk, memory, context window and browser limits still apply.
 
@@ -71,7 +72,7 @@ npx playwright install chromium
 npm run test:browser
 ```
 
-Start `node server.mjs` in another terminal before browser tests. `npm run test:extension` checks the actual unpacked extension in an isolated Chrome profile.
+Start `node server.mjs` in another terminal before browser tests. For `npm run test:extension`, set `CAMPUS_PAIRING_TOKEN` to the same 64-character value in both the companion and test processes. `npm run test:extension` checks the actual unpacked extension in an isolated Chrome profile.
 
 `tests/VERIFICATION.md` records actual results, fixture scope, and limitations. The REA source analysis identifies the older repository; it does not prove current production extension behavior. No BetterCampus source, artwork, hosted themes, or private service credentials are bundled.
 
@@ -81,4 +82,14 @@ See [PRIVACY.md](PRIVACY.md). Canvas import is read-only and requires an explici
 
 ## License
 
-Original code/assets: MIT, see LICENSE. Bundled PDF.js and fflate retain their separate licenses in `src/vendor` and [THIRD-PARTY.md](THIRD-PARTY.md). Open Campus is independent of BetterCampus and LMS vendors.
+Original code/assets: MIT, see LICENSE. Bundled PDF.js and fflate retain their separate licenses in `src/vendor` and [THIRD-PARTY.md](THIRD-PARTY.md). CourseLark is independent of BetterCampus and LMS vendors.
+
+## BetterCampus themes and display controls
+
+In **Appearance → Community themes**, grant optional access to `api.bettercampus.com` to browse, search and page through public themes. Preview a theme before installing, or paste its public community link/code. The preview identifies unsupported values. Downloads use public GET requests without account credentials; CourseLark does not send coursework or write to the community service. Availability depends on that third-party API.
+
+**Import theme** accepts JSON files; **Paste theme JSON** accepts copied exports. Native CourseLark themes and BetterCanvas/BetterCampus export objects (including community `exports` wrappers) are supported. Colors, HTTPS card images, supported fonts, schedules and mapped display toggles convert. **BetterCampus export** writes the older/current observed export keys; applying that output in the current BetterCampus extension remains unverified. Personal tasks, notes and site permissions are never included. Attribution remains in native theme files; the BetterCampus export format does not have a verified attribution field.
+
+Display controls now independently toggle Canvas GPA, to-do, course notes, assignments, preview buttons, image overlays, full-width layout, and workspace companion/quote. Set 1–20 assignments per card. Theme remixes retain images and supported settings; the editor allows card-image URLs and solid sidebar colors. History restores the previous theme and display snapshot.
+
+Google Fonts families and validated sidebar gradients/images are supported. Arbitrary CSS, per-course legacy customization maps and unsupported options are not converted. Import previews report those limits. Existing per-course image overrides take precedence over theme images. Full feature parity, cross-device accounts, friends and bidirectional calendar sync remain unfinished; see FEATURE-COVERAGE.md.

@@ -22,7 +22,7 @@ try {
   const loaded=await cdp.send('Extensions.loadUnpacked',{path:extension});
   const worker=context.serviceWorkers()[0]||await context.waitForEvent('serviceworker',{timeout:15000});
   const root=`chrome-extension://${loaded.id}/`;
-  await worker.evaluate(async site=>{let stored;for(let i=0;i<20;i++){stored=(await chrome.storage.local.get('campus')).campus;if(stored)break;await new Promise(r=>setTimeout(r,100));}stored.settings.lmsOrigins=[site];await chrome.storage.local.set({campus:stored});},origin);
+  await worker.evaluate(async site=>{let stored;for(let i=0;i<20;i++){stored=(await chrome.storage.local.get('campus')).campus;if(stored)break;await new Promise(r=>setTimeout(r,100));}stored.settings.lmsOrigins=[site];stored.legalAcceptance={version:'2026-10-21.1',acceptedAt:'2026-10-18T00:00:00.000Z'};await chrome.storage.local.set({campus:stored});},origin);
   await context.route(origin+'/**',route=>route.fulfill({contentType:'text/html',body:'<!doctype html><html><head><title>Canvas fixture</title></head><body><nav id="header"><ul id="menu"></ul></nav><main id="dashboard"><div class="ic-DashboardCard__box"></div></main></body></html>'}));
   const page=await context.newPage();const errors=[];page.on('pageerror',e=>errors.push(e.message));
   page.on('console',message=>{if(message.type()==='error')errors.push(message.text());});

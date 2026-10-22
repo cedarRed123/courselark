@@ -2,12 +2,13 @@
 import assert from 'node:assert/strict';
 import {readFile, mkdir} from 'node:fs/promises';
 import {fileURLToPath} from 'node:url';
-import {initial,gpaSummary} from '../src/core.js';
+import {initial,gpaSummary,legalVersion} from '../src/core.js';
 const {chromium} = await import(process.env.OPEN_CAMPUS_PLAYWRIGHT || 'playwright');
 const contentPath = fileURLToPath(new URL('../src/content.js', import.meta.url));
 const origin = 'https://school.instructure.com';
 const source = await readFile(contentPath, 'utf8');
-const state = initial(); state.settings.lmsOrigins = [origin]; state.settings.activeAccounts = {[origin]: '7'};
+const themeRuntime=await readFile(new URL('../src/theme-runtime.js',import.meta.url),'utf8');
+const state = initial(); state.legalAcceptance={version:legalVersion,acceptedAt:'2026-10-18T00:00:00.000Z'}; state.settings.lmsOrigins = [origin]; state.settings.activeAccounts = {[origin]: '7'};
 state.settings.mode = 'dark'; state.settings.compact = true; state.settings.hideLogo = true;
 const courseId = origin + '|user:7|course:42';
 state.courses = [{id: courseId, url: origin + '/courses/42', sourceOrigin: origin, userId: '7', grade: 93, name: 'Fall 2026 Biology', credits: 3}, {id:origin+'|user:7|course:99',url:origin+'/courses/99',sourceOrigin:origin,userId:'7',grade:91,name:'Spring 2026 History',credits:3}];
@@ -21,10 +22,10 @@ try {
   const page = await browser.newPage({viewport: {width: 1280, height: 800}});
   page.on('pageerror', e => errors.push(e.message));
   await page.exposeFunction('__fixtureGpaSummary',campus=>gpaSummary(campus,{...campus.settings,origin,activeAccounts:campus.settings.activeAccounts}));
-  await page.route('**/*', route => route.fulfill({status: 200, contentType: 'text/html', body: route.request().url().startsWith(origin) ? fixture : ''}));
+  await page.route('**/*', route => route.request().url().endsWith('/src/theme-runtime.js')?route.fulfill({contentType:'text/javascript',body:themeRuntime}):route.fulfill({status: 200, contentType: 'text/html', body: route.request().url().startsWith(origin) ? fixture : ''}));
   await page.addInitScript(payload => {
     window.__campus = payload; window.__storageListeners = []; window.__messages = [];window.__contentListeners=[];
-    window.chrome = {storage: {local: {get: async () => ({campus: structuredClone(window.__campus)}), set: async ({campus}) => {const oldValue=structuredClone(window.__campus);window.__campus=structuredClone(campus);for(const fn of window.__storageListeners) fn({campus:{oldValue,newValue:structuredClone(campus)}},'local');}}, onChanged: {addListener: fn => window.__storageListeners.push(fn)}}, runtime: {getURL: p => 'chrome-extension://fixture/' + p,onMessage:{addListener:fn=>window.__contentListeners.push(fn)}, sendMessage: async m => {window.__messages.push(m); return m.type==='GPA_SUMMARY'?{ok:true,summary:await window.__fixtureGpaSummary(window.__campus)}:{ok: true};}}};
+    window.chrome = {storage: {local: {get: async () => ({campus: structuredClone(window.__campus)}), set: async ({campus}) => {const oldValue=structuredClone(window.__campus);window.__campus=structuredClone(campus);for(const fn of window.__storageListeners) fn({campus:{oldValue,newValue:structuredClone(campus)}},'local');}}, onChanged: {addListener: fn => window.__storageListeners.push(fn)}}, runtime: {getURL: p => p==='src/theme-runtime.js'?location.origin+'/'+p:'chrome-extension://fixture/' + p,onMessage:{addListener:fn=>window.__contentListeners.push(fn)}, sendMessage: async m => {window.__messages.push(m); return m.type==='GPA_SUMMARY'?{ok:true,summary:await window.__fixtureGpaSummary(window.__campus)}:{ok: true};}}};
     window.__updateCampus = patch => {const oldValue = structuredClone(window.__campus); Object.assign(window.__campus, patch); for (const fn of window.__storageListeners) fn({campus: {oldValue, newValue: structuredClone(window.__campus)}}, 'local');};
   }, state);
   await page.goto(origin + '/'); await page.addScriptTag({content: source});
@@ -64,7 +65,7 @@ try {
   await page.locator('#open-campus-launch').click();
   assert.equal(await page.locator('#open-campus-panel[open]').count(),1);
   assert.match(await page.locator('#open-campus-panel iframe').getAttribute('src'),/index\.html$/);
-  await page.locator('#open-campus-panel .oc-panel-bar').getByRole('button',{name:'Close Open Campus panel'}).click();
+  await page.locator('#open-campus-panel .oc-panel-bar').getByRole('button',{name:'Close CourseLark panel'}).click();
   await page.locator('#open-campus-panel').waitFor({state:'detached'});
   await page.evaluate(()=>window.__contentListeners.forEach(fn=>fn({type:'OPEN_PANEL',page:'grades'},{},()=>{})));
   assert.match(await page.locator('#open-campus-panel iframe').getAttribute('src'),/#grades$/);
@@ -82,6 +83,21 @@ try {
   await page.waitForTimeout(450); assert.equal(await page.evaluate(() => window.__mutations), count);
   const screenshot = process.env.OPEN_CAMPUS_SCREENSHOT;
   if (screenshot) {await mkdir(fileURLToPath(new URL('.', 'file://' + screenshot)), {recursive: true}); await page.screenshot({path: screenshot, fullPage: true});}
+  // Theme backgrounds and crop controls affect the actual rendered Canvas header.
+  await page.evaluate(()=>{const settings=structuredClone(window.__campus.settings);settings.theme={...settings.theme,sidebar:'linear-gradient(#5889a7c7, #519a98c7), url("https://example.com/coast.jpg") center / cover'};const course=window.__campus.courses[0];settings.cardOverrides[course.id]={image:'https://example.com/crop.png',imageX:20,imageY:75,imageZoom:160};window.__updateCampus({settings});});
+  assert.match(await first.locator('.ic-DashboardCard__header_image').evaluate(el=>el.style.backgroundPosition),/20% 75%/);
+  assert.equal(await first.locator('.ic-DashboardCard__header_image').evaluate(el=>el.style.backgroundSize),'160% auto');
+  assert.ok(await page.evaluate(()=>CSS.supports('background','linear-gradient(#5889a7c7, #519a98c7), url("https://example.com/coast.jpg") center / cover')));
+  assert.match(await page.locator('#open-campus-style').textContent(),/coast.jpg/);
+  await page.evaluate(()=>{const settings=structuredClone(window.__campus.settings);settings.cardOverrides={};window.__updateCampus({settings});});
+  // Display toggles remove widgets and restore the native to-do sidebar, then remount cleanly.
+  await page.evaluate(()=>{const settings=structuredClone(window.__campus.settings);Object.assign(settings,{showGpa:false,showTodo:false,showNotes:false,showAssignments:false,showGrades:false});window.__updateCampus({settings});});
+  await page.waitForFunction(()=>!document.querySelector('#open-campus-gpa,#open-campus-todo,.open-campus-note,.open-campus-card-extra,.open-campus-grade'));
+  assert.notEqual(await page.locator('[data-testid="ToDoSidebar"]').evaluate(el=>getComputedStyle(el).display),'none');
+  await page.evaluate(()=>{const settings=structuredClone(window.__campus.settings);Object.assign(settings,{showGpa:true,showTodo:true,showNotes:true,showAssignments:true,showGrades:true,assignmentPreview:false});settings.theme={...settings.theme,images:['https://example.com/community.png']};window.__updateCampus({settings});});
+  await page.waitForSelector('#open-campus-gpa .oc-metric strong');
+  assert.match(await first.locator('.ic-DashboardCard__header_image').evaluate(el=>el.style.backgroundImage),/community.png/);
+  assert.equal(await page.locator('.open-campus-card-extra button').count(),0);
   // Disconnect restores original host styles and removes all injected data.
   await page.evaluate(() => {const settings = structuredClone(window.__campus.settings); settings.lmsOrigins = []; window.__updateCampus({settings});});
   assert.equal(await page.locator('#open-campus-style,#open-campus-widgets-style').count(), 0); assert.equal(await page.locator('#open-campus-launch').count(), 0);
@@ -91,8 +107,11 @@ try {
   await page.evaluate(() => {const settings=structuredClone(window.__campus.settings);settings.lmsOrigins=['https://school.instructure.com'];window.__updateCampus({settings});});
   await page.waitForSelector('#open-campus-gpa .oc-metric strong');
   assert.equal(await page.locator('#open-campus-style,#open-campus-widgets-style').count(),2);
+  await page.evaluate(() => window.__updateCampus({legalAcceptance:null}));
+  await page.waitForFunction(() => !document.querySelector('#open-campus-launch'));
+  assert.equal(await page.locator('#open-campus-gpa,#open-campus-todo,.open-campus-grade').count(),0);
   assert.deepEqual(errors, []);
-  console.log('PASS: Canvas dashboard styles, cards, grade, notes, previews, dynamic mounts, workspace launch, stale-style cleanup and disconnect restoration. No browser errors.');
+  console.log('PASS: Canvas dashboard styles, cards, grade, notes, previews, dynamic mounts, workspace launch, stale-style cleanup, disconnect and Terms-revocation restoration. No browser errors.');
   // An unconnected page is unchanged.
   const unconnected = await browser.newPage(); await unconnected.route('**/*', r => r.fulfill({contentType: 'text/html', body: fixture}));
   await unconnected.addInitScript(() => {window.chrome = {storage: {local: {get: async () => ({campus: {settings: {lmsOrigins: []}}})}}};});

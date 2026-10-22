@@ -4,7 +4,9 @@ import json
 import os
 from pathlib import Path
 import re
+import subprocess
 import sys
+from tempfile import TemporaryDirectory
 import zipfile
 
 root = Path(__file__).resolve().parents[1]
@@ -20,12 +22,15 @@ version = f'{base}.{build}'
 manifest['version'] = version
 out = root / 'dist'
 out.mkdir(exist_ok=True)
-archive = out / f'open-campus-{version}.zip'
-files = [source / name for name in ('index.html', 'popup.html', 'LICENSE', 'THIRD-PARTY.md')]
-files += sorted(p for folder in ('src', 'icons') for p in (source / folder).rglob('*') if p.is_file() and not p.name.startswith('.'))
+archive = out / f'courselark-{version}.zip'
+with TemporaryDirectory() as temporary:
+    validated = Path(temporary) / 'validated.zip'
+    subprocess.run([sys.executable, str(root / 'tools/package-extension.py'), str(source), str(validated)],
+                   check=True, capture_output=True, text=True)
+    with zipfile.ZipFile(validated) as checked:
+        entries = {name: checked.read(name) for name in checked.namelist()}
+entries['manifest.json'] = (json.dumps(manifest, indent=2) + '\n').encode()
 with zipfile.ZipFile(archive, 'w', compression=zipfile.ZIP_DEFLATED) as z:
-    entries = {'manifest.json': (json.dumps(manifest, indent=2) + '\n').encode()}
-    entries.update({p.relative_to(source).as_posix(): p.read_bytes() for p in files})
     for name, data in sorted(entries.items()):
         info = zipfile.ZipInfo(name, (2020, 1, 1, 0, 0, 0))
         info.compress_type = zipfile.ZIP_DEFLATED
