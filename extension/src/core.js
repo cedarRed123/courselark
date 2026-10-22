@@ -48,10 +48,13 @@ export function streak(state,now=new Date()) {
 const gradeNumber = value => value === null || value === undefined || (typeof value !== 'number' && typeof value !== 'string') || (typeof value === 'string' && !value.trim()) || !Number.isFinite(Number(value)) ? null : Number(value);
 const letterValue = value => typeof value === 'string' ? value.trim().toUpperCase().replace('−','-') : '';
 const letterPoints = {'A+':4,A:4,'A-':3.7,'B+':3.3,B:3,'B-':2.7,'C+':2.3,C:2,'C-':1.7,'D+':1.3,D:1,'D-':0.7,F:0};
-export function gradePoint(percent,scale='college',rigor=0) {
+// Lines like "93 4.0" or "93=4": minimum percentage, then grade points. Invalid lines are ignored.
+export function parseScale(text){return String(text||'').split('\n').map(l=>l.match(/^\s*(\d{1,3}(?:\.\d+)?)\s*[=:, ]\s*(\d(?:\.\d+)?)\s*$/)).filter(Boolean).map(m=>({min:Number(m[1]),points:Number(m[2])})).filter(r=>r.min<=150&&r.points<=5).sort((a,b)=>b.min-a.min);}
+export function gradePoint(percent,scale='college',rigor=0,table=[]) {
  const letter=letterValue(percent), p=gradeNumber(percent), whole=scale==='whole'||scale==='highschool';
  let point;
- if(Object.hasOwn(letterPoints,letter))point=whole?({A:4,B:3,C:2,D:1,F:0}[letter[0]]):letterPoints[letter];
+ if(scale==='custom'&&!Object.hasOwn(letterPoints,letter)&&p!==null&&p>=0)point=(table.find(r=>p>=r.min)?.points)??0;
+ else if(Object.hasOwn(letterPoints,letter))point=whole?({A:4,B:3,C:2,D:1,F:0}[letter[0]]):letterPoints[letter];
  else if(p!==null&&p>=0)point=whole?(p>=90?4:p>=80?3:p>=70?2:p>=60?1:0):(p>=93?4:p>=90?3.7:p>=87?3.3:p>=83?3:p>=80?2.7:p>=77?2.3:p>=73?2:p>=70?1.7:p>=67?1.3:p>=63?1:p>=60?.7:0);
  else return null;
  const bonus=gradeNumber(rigor);return point+(point>0&&bonus!==null?Math.max(0,bonus):0);
@@ -77,7 +80,8 @@ export function isCurrentCourse(course,now=new Date()) {
 export function gpaSummary(input,options={}) {
  const courses=Array.isArray(input)?input:(input?.courses||[]);
  const o={...(Array.isArray(input)?{}:input?.settings||{}),...options};
- const scale=(o.scale||o.gpaScale)==='plusMinus'||o.scale==='college'?'plusMinus':'whole';
+ const table=parseScale(o.customScale);
+ const scale=(o.scale||o.gpaScale)==='custom'&&table.length?'custom':(o.scale||o.gpaScale)==='plusMinus'||o.scale==='college'?'plusMinus':'whole';
  const now=new Date(o.now||Date.now()), defaultCredits=gradeNumber(o.defaultCredits)>0?Number(o.defaultCredits):3;
  const scoped=courses.filter(c=>(!o.origin||!c.sourceOrigin||c.sourceOrigin===o.origin)&&(!o.userId||!c.userId||String(c.userId)===String(o.userId))&&(!c.userId||!o.activeAccounts?.[c.sourceOrigin]||String(c.userId)===String(o.activeAccounts[c.sourceOrigin])));
  const unique=[...new Map(scoped.map((c,i)=>[c.id??'row:'+i,c])).values()];
@@ -113,7 +117,7 @@ export function gpaSummary(input,options={}) {
   // A synthetic final zero without any current graded work is not an earned F.
   if(!manual&&override===null&&currentScore===null&&finalScore===0&&c.gpaInclude!==true){exclusion(bucket,c,'ungraded');return;}
   const direct=manual?gradeNumber(c.gpa):null;
-  const points=direct!==null&&direct>=0&&direct<=5?direct:gradePoint(letter||score,scale,o.weighted?c.rigor:0);
+  const points=direct!==null&&direct>=0&&direct<=5?direct:gradePoint(letter||score,scale,o.weighted?c.rigor:0,table);
   if(points===null){exclusion(bucket,c,'ungraded');return;}
   const assumedCredits=c.credits===undefined||c.credits===null||c.creditsAssumed===true;
   const basis=direct!==null?'manual-gpa':override!==null?'manual-score':historical&&finalScore!==null?'posted-final':letter?'posted-letter':'current-estimate';

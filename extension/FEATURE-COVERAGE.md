@@ -10,15 +10,15 @@
 | Auto-rotate and history | Daily rotation; unrestricted local history | Implemented; daily rotation does not add history snapshots |
 | Image editor | Per-card HTTPS background, brightness, blur | Implemented; no crop/advanced bitmap editor |
 | Community themes, reactions, submissions | Public BetterCampus catalog and theme-file exchange | Browsing/import implemented; publishing, likes/comments/review not implemented |
-| Fonts, gradients, density/sidebar controls | Five installed font families; gradients, compact cards, hide logo/feedback, show links/grades | Implemented subset; custom arbitrary font loading, tab icons and custom CSS not implemented |
+| Fonts, gradients, density/sidebar controls | Five installed font families; gradients, compact cards, hide logo/feedback, show links/grades | Google Fonts families, layered gradients/HTTPS sidebar images and user custom CSS implemented; tab icons not implemented |
 | Course customization | Colors/images/names/codes/visibility/custom links; existing Canvas images preserved unless overridden | Implemented; fixture verifies injection/restoration |
-| Assignment list/deadlines | Canvas paginated same-origin API import, search/filter, completion; inline Canvas right sidebar with timeframe, groups, progress and local add task | Implemented and synthetic integration tested; refresh is manual |
+| Assignment list/deadlines | Canvas paginated same-origin API import, search/filter, completion; inline Canvas right sidebar with timeframe, groups, progress and local add task | Implemented and synthetic integration tested; one-time site enable, then automatic refresh on each visit (30-minute throttle) |
 | Dashboard assignment preview | Text-only descriptions in workspace and injected Canvas cards | Implemented; dashboard announcement preview not implemented |
 | Subtasks, notes, work times | Per-task local controls, agenda grouping | Implemented, persistence tested |
 | Todo progress visuals | In-page progress ring, grouped cards, completed tab, course colors and task count | Implemented in fixture; original browser installation was unavailable for live post-change visual verification |
 | Assignment reminders | Browser alarms, deduplicated notifications, configurable lead | Implemented with mock extension tests; OS notification behavior unverified |
 | Plan/calendar sync | Work blocks, ICS export, Google/Outlook event links; one-way sync into a CourseLark calendar on Google (OAuth token flow), Outlook (OAuth PKCE) and iCloud (CalDAV with app-specific password), every 5 minutes, direct from the browser | Implemented with mocked provider tests. Google/Outlook need public OAuth client IDs in `src/calendar-config.js`; real-account sync unverified. Changes made inside the provider calendar are not pulled back. |
-| Credit-weighted GPA | Current and cumulative in-page overview; configurable whole-letter or plus/minus scale, credits, course exclusions, prior GPA and term choice; standalone grade planner | Implemented and tested; school-specific arbitrary point scale editor remains unimplemented |
+| Credit-weighted GPA | Current and cumulative in-page overview; configurable whole-letter or plus/minus scale, credits, course exclusions, prior GPA and term choice; standalone grade planner | Implemented and tested, including a custom percentage-to-points scale editor in the Canvas GPA settings |
 | Individual grade goals | Per-course goals and final-score requirement | Implemented and tested |
 | Assignment what-if | Hypothetical points-based grades | Implemented; weighted/drop-rule policies not mirrored from LMS |
 | Grade trends | Local score snapshots with bar chart | Implemented; no historical server data |
