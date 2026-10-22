@@ -213,3 +213,53 @@ test('read-only GPA message scopes grades to connected top-level tab and active 
   granted.clear();await assert.rejects(background.handleMessage({type:'GPA_SUMMARY'},sender),/connected LMS/);
   reset();await assert.rejects(background.handleMessage({type:'GPA_SUMMARY'},sender),/Import this Canvas account/);
 });
+
+const lmsOrigin = 'https://lms.school.edu';
+const lmsPage = (path, selectors = {}) => { globalThis.location = new URL(lmsOrigin + path); globalThis.document = {querySelector: s => Object.entries(selectors).find(([k]) => s.includes(k))?.[1] ?? null, querySelectorAll: () => []}; };
+
+test('Brightspace import pages enrollments, reads dropbox due dates and released final grades, stays same-origin', async () => {
+  reset(); lmsPage('/d2l/home'); const calls = [];
+  globalThis.fetch = async (url, opts) => {
+    const u = new URL(url); calls.push({u, opts});
+    if (u.pathname === '/d2l/api/versions/') return response([{ProductCode: 'lp', LatestVersion: '1.47'}, {ProductCode: 'le', LatestVersion: '1.75'}]);
+    if (u.pathname === '/d2l/api/lp/1.47/users/whoami') return response({Identifier: '55'});
+    if (u.pathname === '/d2l/api/lp/1.47/enrollments/myenrollments/') return u.searchParams.get('bookmark') ? response({Items: [{OrgUnit: {Id: 8, Name: 'Old'}, Access: {IsActive: false}}], PagingInfo: {HasMoreItems: false}}) : response({Items: [{OrgUnit: {Id: 7, Name: 'Chemistry', Code: 'CHEM'}, Access: {IsActive: true, CanAccess: true}}], PagingInfo: {HasMoreItems: true, Bookmark: 'b1'}});
+    if (u.pathname === '/d2l/api/le/1.75/7/grades/final/values/myGradeValue') return response({PointsNumerator: 87, PointsDenominator: 100});
+    if (u.pathname === '/d2l/api/le/1.75/8/grades/final/values/myGradeValue') return response({}, '', 403);
+    if (u.pathname === '/d2l/api/le/1.75/7/dropbox/folders/') return response([{Id: 3, Name: 'Lab 1', DueDate: '2026-11-01T05:00:00Z', Assessment: {ScoreDenominator: 20}}]);
+    throw Error('Unexpected ' + url);
+  };
+  const result = await background.collectLMS();
+  assert.equal(result.error, undefined);
+  assert.deepEqual(result.courses.map(c => [c.name, c.grade]), [['Chemistry', 87], ['Old', null]]);
+  assert.equal(result.tasks.length, 1); assert.equal(result.tasks[0].points, 20); assert.equal(result.tasks[0].due, '2026-11-01T05:00:00.000Z');
+  assert.ok(calls.every(c => c.u.origin === lmsOrigin && !c.opts.method));
+});
+
+test('Moodle import uses the page sesskey for read-only AJAX lookups', async () => {
+  reset(); lmsPage('/my/', {'logout.php': {href: lmsOrigin + '/login/logout.php?sesskey=abc123'}, 'data-userid': {dataset: {userid: '9'}}}); const bodies = [];
+  globalThis.fetch = async (url, opts) => {
+    const u = new URL(url); assert.equal(u.searchParams.get('sesskey'), 'abc123'); const [req] = JSON.parse(opts.body); bodies.push(req.methodname);
+    if (req.methodname === 'core_course_get_enrolled_courses_by_timeline_classification') return response([{error: false, data: {courses: [{id: 4, fullname: 'Physics', shortname: 'PHY'}]}}]);
+    return response([{error: false, data: {events: [{id: 11, name: 'Essay is due', activityname: 'Essay', timesort: 1793000000, url: 'https://evil.example/x', course: {id: 4}}]}}]);
+  };
+  const result = await background.collectLMS();
+  assert.deepEqual(bodies, ['core_course_get_enrolled_courses_by_timeline_classification', 'core_calendar_get_action_events_by_timesort']);
+  assert.equal(result.courses[0].name, 'Physics'); assert.equal(result.tasks[0].title, 'Essay');
+  assert.equal(result.tasks[0].url, lmsOrigin + '/course/view.php?id=4'); assert.equal(result.tasks[0].courseId, result.courses[0].id);
+});
+
+test('Blackboard import reads memberships, gradebook columns, user grades and the external total', async () => {
+  reset(); lmsPage('/ultra/course');
+  globalThis.fetch = async url => {
+    const u = new URL(url);
+    if (u.pathname === '/learn/api/public/v1/users/me') return response({id: '_5_1'});
+    if (u.pathname === '/learn/api/public/v1/users/_5_1/courses') return response({results: [{courseRoleId: 'Student', course: {id: '_9_1', name: 'History', courseId: 'HIST'}}, {course: {id: '_10_1'}, availability: {available: 'No'}}]});
+    if (u.pathname === '/learn/api/public/v1/courses/_9_1/gradebook/columns') return response({results: [{id: 'c1', name: 'Quiz', score: {possible: 10}, grading: {due: '2026-11-02T00:00:00Z'}}, {id: 'tot', name: 'Total', externalGrade: true, score: {possible: 200}}]});
+    if (u.pathname === '/learn/api/public/v1/courses/_9_1/gradebook/users/_5_1') return response({results: [{columnId: 'c1', score: 8, status: 'Graded'}, {columnId: 'tot', score: 180}]});
+    throw Error('Unexpected ' + url);
+  };
+  const result = await background.collectLMS();
+  assert.equal(result.courses.length, 1); assert.equal(result.courses[0].grade, 90);
+  assert.equal(result.tasks.length, 1); assert.equal(result.tasks[0].score, 8); assert.equal(result.tasks[0].done, true);
+});

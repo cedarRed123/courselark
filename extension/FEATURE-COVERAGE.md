@@ -45,7 +45,7 @@
 | Agenda/motivational quotes | All upcoming work/due dates; editable quote | Implemented |
 | Canvas | Authenticated read-only import and inline GPA/to-do enhancements | Implemented; updated extension loaded on the user's live Canvas page in Brave; official import and GPA accuracy still depend on Canvas data and school policy |
 | Workspace panel in Canvas | Full workspace opens in an embedded modal from Canvas navigation or the toolbar popup; grade planner opens the GPA page in the same tab | Tested in isolated Chromium and in the user's live Brave Canvas tab; closes with × or Escape |
-| Brightspace/Blackboard/Moodle/Classroom | Visible-page course discovery, generic styling, manual tasks/grades | Full automatic assignments/grades import not implemented |
+| Brightspace/Blackboard/Moodle/Classroom | Session-based read-only import: Brightspace (enrollments, dropbox due dates, released final grades), Moodle (in-progress courses, upcoming activities), Blackboard Learn (courses, gradebook columns, scores, total); Google Classroom visible-page discovery | Mock-API tested; real institution APIs unverified; Moodle grades and Google Classroom (needs OAuth client) not imported; Canvas-only in-page widgets |
 | Languages/browsers | English; Chrome/Edge MV3 | Chrome unpacked verification; multilingual/Firefox/Safari ports not implemented |
 | Monetization | No billing, quotas for upsell, subscription gates, BetterCampus entitlement requests | Implemented features all available free; hardware/provider limits still apply |
 

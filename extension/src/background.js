@@ -141,6 +141,105 @@ chrome.runtime.onMessage.addListener((message, sender, respond) => {
 export async function collectLMS() {
   const origin = location.origin, courses = [], tasks = [], warnings = [];
   const isCanvas = !!document.querySelector('#global_nav_dashboard_link,.ic-app-header,.ic-DashboardCard') || location.hostname.endsWith('.instructure.com');
+  // Same-origin, read-only JSON helper for the non-Canvas adapters below.
+  const json = async (path, options = {}) => {
+    const url = new URL(path, origin);
+    if (url.origin !== origin) throw Error('Refused a request outside this LMS.');
+    const response = await fetch(url.href, {credentials: 'same-origin', signal: AbortSignal.timeout(20000), ...options});
+    if (!response.ok) throw Error(`LMS returned ${response.status}.`);
+    return response.json();
+  };
+  const num = value => value !== null && value !== undefined && value !== '' && Number.isFinite(Number(value)) ? Number(value) : null;
+  const iso = value => value && Number.isFinite(Date.parse(value)) ? new Date(value).toISOString() : null;
+  const pct = (n, d) => num(n) !== null && num(d) > 0 ? Math.round(10000 * num(n) / num(d)) / 100 : null;
+  const brightspace = location.pathname.startsWith('/d2l/') || !!document.querySelector('d2l-navigation,d2l-navigation-main-header');
+  const moodleSession = document.querySelector('a[href*="/login/logout.php?sesskey="]')?.href?.match(/sesskey=([\w]+)/)?.[1];
+  const blackboard = location.pathname.startsWith('/ultra/') || location.pathname.startsWith('/webapps/') || !!document.querySelector('#bb-session-key,bb-base-layout');
+  if (!isCanvas && brightspace) {
+    try {
+      const versions = await json('/d2l/api/versions/');
+      const latest = code => versions.find(v => v.ProductCode === code)?.LatestVersion;
+      const lp = latest('lp'), le = latest('le');
+      if (!lp || !le) throw Error('Brightspace did not report its API versions.');
+      const me = await json(`/d2l/api/lp/${lp}/users/whoami`);
+      if (!/^\d+$/.test(String(me.Identifier))) throw Error('Brightspace did not return a signed-in user.');
+      const prefix = origin + '|user:' + me.Identifier + '|';
+      let bookmark = '', pages = 0, items = [];
+      do {
+        const page = await json(`/d2l/api/lp/${lp}/enrollments/myenrollments/?orgUnitTypeId=3${bookmark ? '&bookmark=' + encodeURIComponent(bookmark) : ''}`);
+        items.push(...(page.Items || []));
+        bookmark = page.PagingInfo?.HasMoreItems ? page.PagingInfo.Bookmark : '';
+      } while (bookmark && ++pages < 50);
+      for (const item of items) {
+        const unit = item.OrgUnit || {}, access = item.Access || {};
+        if (!/^\d+$/.test(String(unit.Id)) || access.CanAccess === false) continue;
+        const courseId = prefix + 'course:' + unit.Id;
+        let grade = null;
+        try { const g = await json(`/d2l/api/le/${le}/${unit.Id}/grades/final/values/myGradeValue`); grade = pct(g.PointsNumerator, g.PointsDenominator) ?? pct(g.WeightedNumerator, g.WeightedDenominator); } catch {}
+        courses.push({id: courseId, userId: String(me.Identifier), sourceOrigin: origin, name: String(unit.Name || 'Course ' + unit.Id), code: String(unit.Code || ''), url: origin + '/d2l/home/' + unit.Id, grade, currentGrade: grade, courseStart: iso(access.StartDate), courseEnd: iso(access.EndDate), enrollmentType: 'student', importedAt: Date.now(), source: 'brightspace'});
+        if (access.IsActive === false) continue;
+        try {
+          for (const f of await json(`/d2l/api/le/${le}/${unit.Id}/dropbox/folders/`)) {
+            if (!/^\d+$/.test(String(f.Id))) continue;
+            tasks.push({id: prefix + 'assignment:' + f.Id, userId: String(me.Identifier), sourceOrigin: origin, title: String(f.Name || 'Assignment'), courseId, due: iso(f.DueDate), url: `${origin}/d2l/lms/dropbox/user/folder_submit_files.d2l?ou=${unit.Id}&db=${f.Id}`, description: '', points: num(f.Assessment?.ScoreDenominator), score: null, source: 'brightspace'});
+          }
+        } catch (e) { warnings.push(`${unit.Name || unit.Id}: ${e.message}`); }
+      }
+      return {origin, userId: String(me.Identifier), courses, tasks, warnings};
+    } catch (e) { return {error: 'Brightspace import failed: ' + e.message}; }
+  }
+  if (!isCanvas && moodleSession) {
+    try {
+      // Moodle's AJAX services are POST-only; these calls are read-only lookups.
+      const call = async (methodname, args) => {
+        const [result] = await json(`/lib/ajax/service.php?sesskey=${encodeURIComponent(moodleSession)}&info=${methodname}`, {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify([{index: 0, methodname, args}])});
+        if (!result || result.error) throw Error(result?.exception?.message || 'Moodle request failed.');
+        return result.data;
+      };
+      const enrolled = await call('core_course_get_enrolled_courses_by_timeline_classification', {offset: 0, limit: 0, classification: 'inprogress', sort: 'fullname'});
+      const userId = String(document.querySelector('[data-userid]')?.dataset.userid || 'session');
+      const prefix = origin + '|user:' + userId + '|';
+      for (const c of enrolled.courses || []) {
+        if (!/^\d+$/.test(String(c.id))) continue;
+        courses.push({id: prefix + 'course:' + c.id, userId, sourceOrigin: origin, name: String(c.fullname || c.shortname || 'Course ' + c.id), code: String(c.shortname || ''), url: origin + '/course/view.php?id=' + c.id, grade: null, enrollmentType: 'student', importedAt: Date.now(), source: 'moodle'});
+      }
+      const events = await call('core_calendar_get_action_events_by_timesort', {timesortfrom: Math.floor(Date.now() / 1000) - 14 * 86400, limitnum: 50});
+      for (const e of events.events || []) {
+        if (!/^\d+$/.test(String(e.id)) || !/^\d+$/.test(String(e.course?.id))) continue;
+        let url = origin + '/course/view.php?id=' + e.course.id;
+        try { const u = new URL(e.url || url, origin); if (u.origin === origin) url = u.href; } catch {}
+        tasks.push({id: prefix + 'event:' + e.id, userId, sourceOrigin: origin, title: String(e.activityname || e.name || 'Activity'), courseId: prefix + 'course:' + e.course.id, due: e.timesort ? new Date(e.timesort * 1000).toISOString() : null, url, description: '', points: null, score: null, source: 'moodle'});
+      }
+      warnings.push('Moodle import includes in-progress courses and upcoming activities; grades are not imported.');
+      return {origin, userId, courses, tasks, warnings};
+    } catch (e) { return {error: 'Moodle import failed: ' + e.message}; }
+  }
+  if (!isCanvas && blackboard) {
+    try {
+      const me = await json('/learn/api/public/v1/users/me');
+      if (!me?.id) throw Error('Blackboard did not return a signed-in user.');
+      const userId = String(me.id), prefix = origin + '|user:' + userId + '|', base = '/learn/api/public/v1';
+      const memberships = (await json(`${base}/users/${encodeURIComponent(userId)}/courses?expand=course&limit=100`)).results || [];
+      for (const m of memberships) {
+        const c = m.course || {};
+        if (!c.id || m.availability?.available === 'No' || c.availability?.available === 'No') continue;
+        const courseId = prefix + 'course:' + c.id;
+        courses.push({id: courseId, userId, sourceOrigin: origin, name: String(c.name || c.courseId || 'Course'), code: String(c.courseId || ''), url: `${origin}/ultra/courses/${encodeURIComponent(c.id)}/outline`, grade: null, enrollmentType: m.courseRoleId === 'Student' ? 'student' : m.courseRoleId || 'student', importedAt: Date.now(), source: 'blackboard'});
+        try {
+          const columns = (await json(`${base}/courses/${encodeURIComponent(c.id)}/gradebook/columns?limit=100`)).results || [];
+          const grades = new Map(((await json(`${base}/courses/${encodeURIComponent(c.id)}/gradebook/users/${encodeURIComponent(userId)}`).catch(() => ({}))).results || []).map(g => [g.columnId, g]));
+          for (const col of columns) {
+            if (!col.id || col.externalGrade) continue;
+            const g = grades.get(col.id), points = num(col.score?.possible);
+            tasks.push({id: prefix + 'column:' + col.id, userId, sourceOrigin: origin, title: String(col.name || 'Assignment'), courseId, due: iso(col.grading?.due), url: `${origin}/ultra/courses/${encodeURIComponent(c.id)}/grades`, description: '', points, score: num(g?.score), done: ['Graded', 'NeedsGrading'].includes(g?.status), submitted: ['Graded', 'NeedsGrading'].includes(g?.status), source: 'blackboard'});
+          }
+          const total = columns.find(col => col.externalGrade), g = total && grades.get(total.id);
+          if (g) courses.at(-1).grade = courses.at(-1).currentGrade = pct(g.score, total.score?.possible);
+        } catch (e) { warnings.push(`${c.name || c.id}: ${e.message}`); }
+      }
+      return {origin, userId, courses, tasks, warnings};
+    } catch (e) { return {error: 'Blackboard import failed: ' + e.message}; }
+  }
   if (!isCanvas) {
     const selector = 'a[href*="/courses/"],a[href*="/d2l/home/"],a[href*="/course/view.php"],a[href*="/ultra/courses/"],a[href*="classroom.google.com/c/"]';
     for (const link of document.querySelectorAll(selector)) {
@@ -149,7 +248,7 @@ export async function collectLMS() {
         if (url.origin === origin && name && !courses.some(c => c.url === url.href)) courses.push({id: origin + '|page:' + url.pathname, name, url: url.href, grade: null, sourceOrigin: origin, source: 'page'});
       } catch {}
     }
-    warnings.push('Page-only import: visible courses. Automatic assignments and grades are implemented for Canvas; use manual entry or backups on other LMSs.');
+    warnings.push('Page-only import: visible courses. Automatic assignments and grades are implemented for Canvas, Brightspace, Moodle (assignments) and Blackboard Learn; use manual entry on other LMSs.');
     return {origin, courses, tasks, warnings};
   }
   async function get(path, array = true) {
