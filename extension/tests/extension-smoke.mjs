@@ -54,6 +54,10 @@ try {
   const fileButton=page.locator('[data-action="file-open"]').first();await fileButton.click();
   await page.waitForFunction(()=>document.querySelector('#pdf-page')?.width>0&&document.querySelector('#pdf-page-label')?.textContent.includes('1 / 1'));
   pass('PASS attached PDF opens and renders a page into the annotation canvas.');
+  const [pdfDownload]=await Promise.all([page.waitForEvent('download'),page.locator('[data-action="pdf-export-all"]').click()]);
+  const exported=await readFile(await pdfDownload.path());
+  assert.ok(exported.subarray(0,8).toString('latin1').startsWith('%PDF-1.4')&&exported.toString('latin1').includes('/DCTDecode')&&exported.length>2000);
+  pass('PASS annotated PDF export downloads a multi-page image PDF.');
   await page.locator('#close-dialog').click();await page.reload();await page.waitForSelector('#view');
   const state=await worker.evaluate(async()=>(await chrome.storage.local.get('campus')).campus);
   assert.ok(state.notes.some(n=>n.title==='PDF fixture notebook'&&n.body.includes('Photosynthesis')));

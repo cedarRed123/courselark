@@ -203,6 +203,23 @@ export function embedURL(value){let u;try{u=new URL(value);}catch{return '';}con
  if(u.hostname==='youtu.be'){const v=u.pathname.slice(1);return id.test(v)?`https://www.youtube-nocookie.com/embed/${v}`:'';}
  if(u.hostname==='music.apple.com')return `https://embed.music.apple.com${u.pathname}`;
  return '';}
+// Minimal PDF writer: one full-page JPEG per page (pages are [{jpeg:Uint8Array,width,height}] in points).
+export function imagePDF(pages){
+ const enc=new TextEncoder(),parts=[],offsets=[];let length=0;
+ const push=chunk=>{const bytes=typeof chunk==='string'?enc.encode(chunk):chunk;parts.push(bytes);length+=bytes.length;};
+ const object=(n,body)=>{offsets[n]=length;push(`${n} 0 obj\n`);for(const b of [].concat(body))push(b);push('\nendobj\n');};
+ push('%PDF-1.4\n%\xff\xff\n');
+ const kids=pages.map((_,i)=>`${3+i*3} 0 R`).join(' ');
+ object(1,'<< /Type /Catalog /Pages 2 0 R >>');
+ object(2,`<< /Type /Pages /Kids [${kids}] /Count ${pages.length} >>`);
+ pages.forEach((p,i)=>{const n=3+i*3,w=Math.round(p.width),h=Math.round(p.height),draw=`q ${w} 0 0 ${h} 0 0 cm /Im0 Do Q`;
+  object(n,`<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${w} ${h}] /Resources << /XObject << /Im0 ${n+2} 0 R >> >> /Contents ${n+1} 0 R >>`);
+  object(n+1,`<< /Length ${draw.length} >>\nstream\n${draw}\nendstream`);
+  object(n+2,[`<< /Type /XObject /Subtype /Image /Width ${p.pixelWidth||w} /Height ${p.pixelHeight||h} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${p.jpeg.length} >>\nstream\n`,p.jpeg,'\nendstream']);});
+ const count=3+pages.length*3,xref=length;
+ push(`xref\n0 ${count}\n0000000000 65535 f \n`+offsets.slice(1).map(o=>String(o).padStart(10,'0')+' 00000 n \n').join('')+`trailer\n<< /Size ${count} /Root 1 0 R >>\nstartxref\n${xref}\n%%EOF\n`);
+ const out=new Uint8Array(length);let at=0;for(const b of parts){out.set(b,at);at+=b.length;}return out;
+}
 export function safeURL(value){try{const u=new URL(value);return ['https:','http:'].includes(u.protocol)?u.href:'';}catch{return '';}}
 export function mergeLMS(state,payload){
  if(Array.isArray(payload.announcements)){const mine=a=>a.sourceOrigin===payload.origin&&String(a.userId)===String(payload.userId);state.announcements=[...(state.announcements||[]).filter(a=>!mine(a)),...payload.announcements].sort((a,b)=>(Date.parse(b.posted)||0)-(Date.parse(a.posted)||0)).slice(0,200);}

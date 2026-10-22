@@ -33,3 +33,13 @@ test('playlist embeds only map known providers to their HTTPS embed players',asy
  assert.equal(embedURL('https://music.apple.com/us/playlist/focus/pl.u-abc'),'https://embed.music.apple.com/us/playlist/focus/pl.u-abc');
  for(const bad of ['javascript:alert(1)','http://open.spotify.com/playlist/x','https://evil.example/playlist/x','https://www.youtube.com/watch?v="><script>']) assert.equal(embedURL(bad),'');
 });
+
+test('image PDF writer produces a valid xref for each page',async()=>{
+ const {imagePDF}=await import('../src/core.js');
+ const jpeg=new Uint8Array([0xff,0xd8,1,2,3,0xff,0xd9]);
+ const bytes=imagePDF([{jpeg,width:612,height:792,pixelWidth:1224,pixelHeight:1584},{jpeg,width:300,height:400}]),text=Buffer.from(bytes).toString('latin1');
+ assert.ok(text.startsWith('%PDF-1.4'));assert.ok(text.endsWith('%%EOF\n'));
+ assert.match(text,/\/Count 2/);assert.match(text,/\/Width 1224 \/Height 1584/);
+ const xref=Number(text.match(/startxref\n(\d+)/)[1]);assert.ok(text.slice(xref).startsWith('xref\n0 9\n'));
+ for(const [,offset,n] of text.slice(xref).matchAll(/(\d{10}) 00000 n /g).map((m,i)=>[m,m[1],i+1]))assert.ok(text.slice(Number(offset)).startsWith(`${n} 0 obj`),`object ${n} offset`);
+});
