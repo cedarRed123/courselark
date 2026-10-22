@@ -1,13 +1,13 @@
 // Real unpacked-extension smoke. Start the local companion server first.
-// Playwright 1.64.1 / Chrome for Testing 156 tested; OPEN_CAMPUS_PLAYWRIGHT may point to index.mjs.
+// Playwright 1.64.1 / Chrome for Testing 156 tested; COURSELARK_PLAYWRIGHT may point to index.mjs.
 import assert from 'node:assert/strict';
 import {mkdir, writeFile, mkdtemp, readFile, rm} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 import {fileURLToPath} from 'node:url';
-const {chromium} = await import(process.env.OPEN_CAMPUS_PLAYWRIGHT || 'playwright');
+const {chromium} = await import(process.env.COURSELARK_PLAYWRIGHT || 'playwright');
 const extension = fileURLToPath(new URL('../', import.meta.url));
-const profile = await mkdtemp(join(tmpdir(), 'open-campus-extension-test-'));
+const profile = await mkdtemp(join(tmpdir(), 'courselark-extension-test-'));
 await mkdir(profile, {recursive:true});
 const context = await chromium.launchPersistentContext(profile, {channel:'chromium', headless:true, viewport:{width:1280,height:850}, ignoreDefaultArgs:['--disable-extensions'], args:['--enable-unsafe-extension-debugging']});
 const outcomes=[], errors=[]; const pass = message => {outcomes.push(message); console.log(message);};
@@ -104,7 +104,7 @@ try {
   assert.equal(companion.status,500);assert.match(companion.data.error,/WHISPER_COMMAND/);
   pass('PASS unpaired extension requests are rejected; paired extension reaches local companion with CSP/CORS and reports missing Whisper configuration. Real transcription not verified.');
   assert.deepEqual(errors,[]);assert.ok(!blocked.some(e=>/Content Security Policy|Refused to|worker/i.test(e)),blocked.join('\n'));
-  if (process.env.OPEN_CAMPUS_SCREENSHOT) await opened.screenshot({path:process.env.OPEN_CAMPUS_SCREENSHOT,fullPage:true});
+  if (process.env.COURSELARK_SCREENSHOT) await opened.screenshot({path:process.env.COURSELARK_SCREENSHOT,fullPage:true});
   pass('PASS no unhandled page errors or CSP/worker load errors in this smoke run.');
   pass('NOT VERIFIED actual optional-host consent prompt acceptance, signed-in LMS import, production UI variants, configured Ollama/Whisper, microphone/audio, or third-party calendar/cloud services. Permission grant/revoke logic and content OPEN are covered by mocked integration tests.');
-} finally {await context.close();await rm(profile,{recursive:true,force:true});if(process.env.OPEN_CAMPUS_SMOKE_REPORT)await writeFile(process.env.OPEN_CAMPUS_SMOKE_REPORT,outcomes.join('\n')+'\n');}
+} finally {await context.close();await rm(profile,{recursive:true,force:true});if(process.env.COURSELARK_SMOKE_REPORT)await writeFile(process.env.COURSELARK_SMOKE_REPORT,outcomes.join('\n')+'\n');}

@@ -6,7 +6,7 @@ The three-part source manifest version is the base. CI appends `github.run_numbe
 
 ## Chrome Web Store connection
 
-The existing Web Store item is `neblllanaehpdoinopcpemcmnfnfppml`. The [October 20 automated 0.3.2.5 run](https://github.com/cedarRed123/open-campus/actions/runs/39349873347) reported `PENDING_REVIEW`; check the current dashboard before relying on that status. That package predates the candidate legal-notice fix.
+The existing Web Store item is `neblllanaehpdoinopcpemcmnfnfppml`. The [October 20 automated 0.3.2.5 run](https://github.com/cedarRed123/courselark/actions/runs/39349873347) reported `PENDING_REVIEW`; check the current dashboard before relying on that status. That package predates the candidate legal-notice fix.
 
 1. Enable the Chrome Web Store API in a Google Cloud project.
 2. Create a dedicated service account and link its email in the Chrome Web Store developer dashboard's Account settings. Follow [Google's service account instructions](https://developer.chrome.com/docs/webstore/service-accounts).

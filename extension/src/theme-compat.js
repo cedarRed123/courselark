@@ -12,7 +12,7 @@ export function normalizeTheme(input){
  if(typeof data==='string')data=JSON.parse(data);
  if(!object(data))throw Error('Invalid theme data.');
  const legacy='dark_preset' in data||'card_colors' in data||Object.keys(mapping).some(k=>k in data);
- if(!legacy&&(!hex(data.bg)||typeof data.name!=='string'))throw Error('Unrecognized theme format. Export a theme JSON file from BetterCampus or Open Campus.');
+ if(!legacy&&(!hex(data.bg)||typeof data.name!=='string'))throw Error('Unrecognized theme format. Export a theme JSON file from BetterCampus or CourseLark.');
  const warnings=[],base=themes[0],settings={};
  const preset=object(data.dark_preset)?data.dark_preset:{};
  const readColor=(v,fallback)=>{if(v===undefined)return fallback;if(!hex(v)){warnings.push('Unsupported color or background replaced with a safe default.');return fallback;}return v;};
@@ -39,7 +39,7 @@ export function normalizeTheme(input){
  theme.settings=settings;
  theme.credits=String(wrapper.credits||data.credits||'').slice(0,120);
  theme.sourceCode=/^[\w-]{1,80}$/.test(wrapper.code||data.sourceCode||'')?wrapper.code||data.sourceCode:'';
- return {theme,warnings:[...new Set(warnings)],format:legacy?'BetterCampus / BetterCanvas':'Open Campus'};
+ return {theme,warnings:[...new Set(warnings)],format:legacy?'BetterCampus / BetterCanvas':'CourseLark'};
 }
 export function exportBetterCampus(theme,settings={}){
  const t=normalizeTheme(theme).theme,s={...t.settings,...settings};

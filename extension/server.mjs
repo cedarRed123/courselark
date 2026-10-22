@@ -31,7 +31,7 @@ const server=http.createServer(async(req,res)=>{
  }
  if(req.method==='POST'&&url.pathname==='/api/transcribe'){
   if(!process.env.WHISPER_COMMAND||!process.env.WHISPER_MODEL)throw Error('Configure WHISPER_COMMAND and WHISPER_MODEL, with ffmpeg installed, to transcribe locally.');
-  const dir=await mkdtemp(resolve(tmpdir(),'open-campus-audio-'));try{const input=resolve(dir,'input.audio'),wav=resolve(dir,'lecture.wav'),output=resolve(dir,'transcript');await writeFile(input,await body(req));await command(process.env.FFMPEG_COMMAND||'ffmpeg',['-y','-i',input,'-ar','16000','-ac','1',wav]);await command(process.env.WHISPER_COMMAND,['-m',process.env.WHISPER_MODEL,'-f',wav,'-otxt','-of',output]);json(res,200,{text:await readFile(output+'.txt','utf8')});}finally{await rm(dir,{recursive:true,force:true});}return;
+  const dir=await mkdtemp(resolve(tmpdir(),'courselark-audio-'));try{const input=resolve(dir,'input.audio'),wav=resolve(dir,'lecture.wav'),output=resolve(dir,'transcript');await writeFile(input,await body(req));await command(process.env.FFMPEG_COMMAND||'ffmpeg',['-y','-i',input,'-ar','16000','-ac','1',wav]);await command(process.env.WHISPER_COMMAND,['-m',process.env.WHISPER_MODEL,'-f',wav,'-otxt','-of',output]);json(res,200,{text:await readFile(output+'.txt','utf8')});}finally{await rm(dir,{recursive:true,force:true});}return;
  }
  if(req.method==='POST'&&url.pathname==='/api/ocr'){
   // Scanned page images to text with a local Tesseract install; nothing leaves this computer.

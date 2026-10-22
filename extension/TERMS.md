@@ -23,7 +23,7 @@ Optional links, image hosts, calendar providers, browser speech recognition, and
 
 ## License and availability
 
-Original CourseLark source code is offered under the [MIT License](https://github.com/cedarRed123/open-campus/blob/main/LICENSE). Third-party components retain their separate licenses and notices. These Terms do not restrict rights granted under those licenses. The extension is free, with no CourseLark subscription or paywall. Features may change. The operator may stop distributing or maintaining the software; local data remains subject to your browser's storage behavior.
+Original CourseLark source code is offered under the [MIT License](https://github.com/cedarRed123/courselark/blob/main/LICENSE). Third-party components retain their separate licenses and notices. These Terms do not restrict rights granted under those licenses. The extension is free, with no CourseLark subscription or paywall. Features may change. The operator may stop distributing or maintaining the software; local data remains subject to your browser's storage behavior.
 
 ## Disclaimers and responsibility
 
