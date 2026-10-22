@@ -21,9 +21,13 @@ export async function publish({token, serviceAccount, publisher, item, version, 
     console.log(`Version ${version} is already published or submitted.`);
     return;
   }
-  if (submitted?.state === 'PENDING_REVIEW') throw Error('An earlier version is under Chrome review. Rerun the latest release after review finishes.');
   const compare = (a, b) => { const x=a.split('.').map(Number), y=b.split('.').map(Number); for(let i=0;i<4;i++) {if((x[i]||0)!==(y[i]||0))return (x[i]||0)-(y[i]||0);} return 0; };
   if ([published, submitted].some(r => r?.distributionChannels?.some(c => compare(c.crxVersion, version) > 0))) throw Error('Refusing to upload an older version than the store already has.');
+  // Keep Google's review on the newest build: withdraw an older pending submission first.
+  if (submitted?.state === 'PENDING_REVIEW') {
+    await call(`${api}:cancelSubmission`, {method:'POST', headers:{'Content-Type':'application/json'}, body:'{}'});
+    console.log(`Cancelled pending review of ${submitted.distributionChannels?.map(c => c.crxVersion).join(', ') || 'an earlier version'}.`);
+  }
   let upload = await call(`https://chromewebstore.googleapis.com/upload/v2/${name}:upload`, {method:'POST', headers:{'Content-Type':'application/zip'}, body:await readFile(archive)});
   for (let attempt=0; ['IN_PROGRESS', 'UPLOAD_IN_PROGRESS'].includes(upload.uploadState) && attempt<30; attempt++) {
     await sleep(10000);

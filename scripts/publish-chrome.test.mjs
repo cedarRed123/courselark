@@ -37,8 +37,11 @@ test('does not submit a failed upload',async()=>{
 test('rerun skips a version already in review',async()=>{
   assert.equal((await run([{submittedItemRevisionStatus:revision('PENDING_REVIEW','0.3.2.1')}])).length,1);
 });
-test('preserves an earlier review',async()=>{
-  await assert.rejects(run([{submittedItemRevisionStatus:revision('PENDING_REVIEW','0.3.2')}]),/earlier version/);
+test('cancels an older pending review, then submits the newer version',async()=>{
+  const calls=await run([{submittedItemRevisionStatus:revision('PENDING_REVIEW','0.3.2')}, {}, {uploadState:'SUCCEEDED'}, {state:'PENDING_REVIEW'}]);
+  assert.match(calls[1].url,/:cancelSubmission$/);
+  assert.match(calls[2].url,/\/upload\/v2\//);
+  assert.match(calls[3].url,/:publish$/);
 });
 test('rejects a stale rerun',async()=>{
   await assert.rejects(run([{publishedItemRevisionStatus:revision('PUBLISHED','0.3.2.2')}]),/older version/);
