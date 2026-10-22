@@ -1,10 +1,11 @@
 /* CourseLark: original, account-aware dashboard decoration. */
 (async () => {
-  const legalVersion = '2026-10-19.1';
+  const legalVersion = '2026-10-21.1';
   if (globalThis.__openCampusInjected) return;
   globalThis.__openCampusInjected = true;
   let state = (await chrome.storage.local.get('campus')).campus;
   if (state?.legalAcceptance?.version !== legalVersion || !state?.settings?.lmsOrigins?.includes(location.origin)) return;
+  if (window === top) chrome.runtime.sendMessage({type: 'AUTO_SYNC'}).catch(() => {});
   const {safeBackground,applyFont}=await import(chrome.runtime.getURL('src/theme-runtime.js'));
   const style = document.createElement('style'); style.id = 'open-campus-style'; document.head.append(style);
   const widgetStyle = document.createElement('style'); widgetStyle.id = 'open-campus-widgets-style'; document.head.append(widgetStyle);

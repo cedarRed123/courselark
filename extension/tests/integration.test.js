@@ -126,6 +126,18 @@ test('content pages open the workspace inside Canvas but cannot invoke privilege
   await assert.rejects(background.handleMessage({type: 'OPEN'}, {id: 'foreign', url: origin, tab: {id: 1}}), /extension/);
 });
 
+test('connected tabs auto-import their own origin, throttle repeat visits, and reject frames or unconnected sites', async () => {
+  reset(); canvasFixture(); const content = {id: 'test-extension', url: origin + '/courses', tab: {id: 9, url: origin + '/courses'}, frameId: 0};
+  let target; chrome.scripting.executeScript = async options => {target = options.target.tabId; return [{result: await background.collectLMS()}];};
+  const first = await background.handleMessage({type: 'AUTO_SYNC'}, content);
+  assert.equal(first.ok, true); assert.equal(target, 9); assert.equal(stored.campus.tasks.length, 2);
+  target = null; assert.equal((await background.handleMessage({type: 'AUTO_SYNC'}, content)).skipped, true); assert.equal(target, null);
+  stored.campus.settings.lastImport.at -= 31 * 60000; assert.equal((await background.handleMessage({type: 'AUTO_SYNC'}, content)).skipped, undefined); assert.equal(target, 9);
+  await assert.rejects(background.handleMessage({type: 'AUTO_SYNC'}, {...content, frameId: 3}), /connected LMS tab/);
+  stored.campus.settings.lmsOrigins = []; await assert.rejects(background.handleMessage({type: 'AUTO_SYNC'}, content), /connected LMS tab/);
+  reset(); stored.campus.legalAcceptance = null; await assert.rejects(background.handleMessage({type: 'AUTO_SYNC'}, content), /connected LMS tab/);
+});
+
 test('workspace import selects most recent connected school tab', async () => {
   reset(); chrome.tabs.query = async query => query.url ? [{id: 2, url: origin, lastAccessed: 2}, {id: 3, url: origin + '/courses/42', lastAccessed: 3}] : [{id: 4, url: chrome.runtime.getURL('index.html')}];
   chrome.scripting.executeScript = async options => {assert.equal(options.target.tabId, 3); return [{result: {origin, courses: [], tasks: [], warnings: []}}];};

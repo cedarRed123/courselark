@@ -1,6 +1,6 @@
 # CourseLark Privacy Policy
 
-**Effective October 19, 2026**
+**Effective October 21, 2026**
 **Operator:** Noah Fishman
 **Contact:** ntfishman@gmail.com
 
@@ -8,7 +8,7 @@ CourseLark is an independent browser extension for organizing schoolwork. It has
 
 ## Information handled
 
-When you choose **Connect this LMS site**, CourseLark requests browser access to that LMS origin. When you choose **Import from this tab** while signed in to Canvas, it uses your current Canvas session to read your Canvas profile identifier, course and enrollment details, assignment titles, descriptions, deadlines, points, submission status, scores, and available grades. On other connected LMS pages, it may read visible course names and links. It uses this information for the dashboard, assignments, course cards, and grade estimates. It does not request your LMS password, submit coursework, or change official grades.
+When you choose **Enable on this site**, CourseLark requests browser access to that LMS origin. After you enable a site, each time you open it while signed in to Canvas (at most every 30 minutes), CourseLark automatically uses your current Canvas session to read your Canvas profile identifier, course and enrollment details, assignment titles, descriptions, deadlines, points, submission status, scores, and available grades. On other connected LMS pages, it may read visible course names and links. It uses this information for the dashboard, assignments, course cards, and grade estimates. It does not request your LMS password, submit coursework, or change official grades.
 
 You may enter tasks, notes, study cards, grade adjustments, course details, themes, settings, links, files, and audio. The extension records local study activity, focus sessions, and task completion for its progress features. These records may contain personal information, website content, and user activity. They are stored in browser extension storage and IndexedDB on your device. The standalone dashboard may also use your browser profile's local storage. The extension does not send them to Noah Fishman or a CourseLark server.
 
