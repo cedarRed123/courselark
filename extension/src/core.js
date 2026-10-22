@@ -1,5 +1,5 @@
 export const uid = () => crypto.randomUUID();
-export const legalVersion = '2026-10-21.4';
+export const legalVersion = '2026-10-22.1';
 export const dayKey = (date = new Date()) => {const d=new Date(date);return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;};
 export const themes = [
  {id:'sage',name:'Quiet campus',bg:'#f4f6f1',surface:'#ffffff',text:'#253831',accent:'#4c7663',palette:['#86a98d','#d6bc86','#a0b5d3','#bd9dba'],font:'system-ui',dark:false},

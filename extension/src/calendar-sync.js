@@ -133,11 +133,11 @@ export async function syncCalendars(tasks, {request = fetch, identity = globalTh
 }
 
 const b64url = bytes => btoa(String.fromCharCode(...new Uint8Array(bytes))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-export async function authorize(name, {interactive = true, identity = chrome.identity, request = fetch} = {}) {
+export async function authorize(name, {interactive = true, identity = chrome.identity, request = fetch, scope = googleScope} = {}) {
   const redirect = identity.getRedirectURL(), state = b64url(crypto.getRandomValues(new Uint8Array(16)));
   if (name === 'google') {
     if (!googleClientId) throw Error('Google Calendar is not configured in this build.');
-    const url = 'https://accounts.google.com/o/oauth2/v2/auth?' + new URLSearchParams({client_id: googleClientId, response_type: 'token', redirect_uri: redirect, scope: googleScope, state, ...(interactive ? {} : {prompt: 'none'})});
+    const url = 'https://accounts.google.com/o/oauth2/v2/auth?' + new URLSearchParams({client_id: googleClientId, response_type: 'token', redirect_uri: redirect, scope, state, ...(interactive ? {} : {prompt: 'none'})});
     const params = new URLSearchParams(new URL(await identity.launchWebAuthFlow({url, interactive})).hash.slice(1));
     if (params.get('state') !== state || !params.get('access_token')) throw Error('Google sign-in was not completed.');
     return {token: params.get('access_token'), expires: Date.now() + Number(params.get('expires_in') || 3600) * 1000};
