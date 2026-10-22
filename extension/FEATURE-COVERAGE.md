@@ -39,7 +39,7 @@
 | Companion/streaks/levels | Original Sprout character with XP and daily activity streak | Implemented locally; not Campy artwork/animations |
 | Friends/community/public materials | No remote social backend | Not implemented |
 | Cross-device account sync | JSON backups and separate attachments | Settings, appearance, custom CSS and themes sync through the browser's own account sync (opt-in, no CourseLark server); tasks/notes/grades stay per device; no CourseLark accounts |
-| Custom playlists | User-supplied provider URL | Implemented link; no in-app playback/provider account integration |
+| Custom playlists | User-supplied provider URL | Saved link plus on-request in-app embedded player for Spotify, YouTube and Apple Music; provider account features depend on the provider |
 | Custom focus/break timers | Deadline-based local timer, pause/reset, notifications | Implemented; browser/workspace must remain open |
 | Breathing breaks | Adjustable duration, inhale/exhale animation | Implemented |
 | Agenda/motivational quotes | All upcoming work/due dates; editable quote | Implemented |

@@ -195,6 +195,14 @@ export function calendarLink(task,provider='google') {
  if(provider==='google'){const p=new URLSearchParams({action:'TEMPLATE',text:task.title,dates:`${stamp(start)}/${stamp(end)}`});return `https://calendar.google.com/calendar/render?${p}`;}
  return `https://outlook.live.com/calendar/0/deeplink/compose?${new URLSearchParams({subject:task.title,startdt:new Date(start).toISOString(),enddt:new Date(end).toISOString()})}`;
 }
+// Provider embed players for saved playlist links; anything else stays a plain link.
+export function embedURL(value){let u;try{u=new URL(value);}catch{return '';}const id=/^[\w-]{1,64}$/;
+ if(u.protocol!=='https:')return '';
+ if(u.hostname==='open.spotify.com'){const [,kind,ref]=u.pathname.match(/^\/(?:intl-[\w-]+\/)?(playlist|album|track|episode|show)\/([\w]+)/)||[];return kind?`https://open.spotify.com/embed/${kind}/${ref}`:'';}
+ if(['www.youtube.com','youtube.com','m.youtube.com','music.youtube.com'].includes(u.hostname)){const list=u.searchParams.get('list'),v=u.searchParams.get('v');if(list&&id.test(list))return `https://www.youtube-nocookie.com/embed/videoseries?list=${list}`;if(v&&id.test(v))return `https://www.youtube-nocookie.com/embed/${v}`;return '';}
+ if(u.hostname==='youtu.be'){const v=u.pathname.slice(1);return id.test(v)?`https://www.youtube-nocookie.com/embed/${v}`:'';}
+ if(u.hostname==='music.apple.com')return `https://embed.music.apple.com${u.pathname}`;
+ return '';}
 export function safeURL(value){try{const u=new URL(value);return ['https:','http:'].includes(u.protocol)?u.href:'';}catch{return '';}}
 export function mergeLMS(state,payload){
  if(Array.isArray(payload.announcements)){const mine=a=>a.sourceOrigin===payload.origin&&String(a.userId)===String(payload.userId);state.announcements=[...(state.announcements||[]).filter(a=>!mine(a)),...payload.announcements].sort((a,b)=>(Date.parse(b.posted)||0)-(Date.parse(a.posted)||0)).slice(0,200);}
