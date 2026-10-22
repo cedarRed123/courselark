@@ -1,6 +1,6 @@
 {
   "name": "courselark",
-  "version": "0.10.0",
+  "version": "0.11.0",
   "private": true,
   "type": "module",
   "description": "Independent local-first campus companion with no subscriptions",

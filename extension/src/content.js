@@ -1,9 +1,14 @@
 /* CourseLark: original, account-aware dashboard decoration. */
 (async () => {
-  const legalVersion = '2026-10-22.1';
+  const legalVersion = '2026-10-22.2';
   if (globalThis.__openCampusInjected) return;
   globalThis.__openCampusInjected = true;
   let state = (await chrome.storage.local.get('campus')).campus;
+  // With one-time school-site access, recognize LMS pages and connect them without a popup step.
+  const lmsPage = () => !!document.querySelector('#global_nav_dashboard_link,.ic-app-header,d2l-navigation,d2l-navigation-main-header,a[href*="/login/logout.php?sesskey="],#bb-session-key,bb-base-layout') || location.hostname.endsWith('.instructure.com') || location.pathname.startsWith('/d2l/') || location.pathname.startsWith('/ultra/') || location.hostname === 'classroom.google.com';
+  if (window === top && state?.legalAcceptance?.version === legalVersion && !state?.settings?.lmsOrigins?.includes(location.origin) && !state?.settings?.excludedOrigins?.includes(location.origin) && lmsPage()) {
+    if ((await chrome.runtime.sendMessage({type: 'AUTO_CONNECT'}).catch(() => null))?.ok) state = (await chrome.storage.local.get('campus')).campus;
+  }
   if (state?.legalAcceptance?.version !== legalVersion || !state?.settings?.lmsOrigins?.includes(location.origin)) return;
   if (window === top) chrome.runtime.sendMessage({type: 'AUTO_SYNC'}).catch(() => {});
   const {safeBackground,applyFont}=await import(chrome.runtime.getURL('src/theme-runtime.js'));
